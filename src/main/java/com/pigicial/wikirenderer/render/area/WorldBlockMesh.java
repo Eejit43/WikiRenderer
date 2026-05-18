@@ -141,16 +141,29 @@ public class WorldBlockMesh {
     // Based on LevelRenderer#prepareChunkRenders
     private ChunkSectionsToRender prepareBlockLayers(Matrix4fc posMatrix) {
         EnumMap<ChunkSectionLayer, Int2ObjectOpenHashMap<List<RenderPass.Draw<GpuBufferSlice[]>>>> drawGroups = new EnumMap<>(ChunkSectionLayer.class);
-        int largestIndexCount = 0;
 
         for (ChunkSectionLayer layer : ChunkSectionLayer.values()) {
             drawGroups.put(layer, new Int2ObjectOpenHashMap<>());
+        }
+
+        List<MeshRenderSection> sortedSections = new ArrayList<>(subMeshes.values());
+
+        if (orthographicTransparencySorting instanceof OrthographicSort orthoSort) {
+                sortedSections.sort(Comparator.comparingDouble(s -> {
+                    BlockPos from = s.getFrom();
+                    BlockPos to = s.getTo();
+                    float cx = (from.getX() + to.getX()) / 2f;
+                    float cy = (from.getY() + to.getY()) / 2f;
+                    float cz = (from.getZ() + to.getZ()) / 2f;
+                    return orthoSort.projectDepth(cx, cy, cz);
+                }));
         }
 
         List<DynamicUniforms.ChunkSectionInfo> sectionInfos = new ArrayList<>();
         GpuTextureView gpuTextureView = Minecraft.getInstance().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTextureView();
         int width = gpuTextureView.getWidth(0);
         int height = gpuTextureView.getHeight(0);
+        int largestIndexCount = 0;
 
         if (sectionRenderDispatcher != null) {
             sectionRenderDispatcher.lock();
@@ -159,7 +172,7 @@ public class WorldBlockMesh {
                     sectionRenderDispatcher.uploadGlobalGeomBuffersToGPU();
                 }
 
-                for (SectionRenderDispatcher.RenderSection section : subMeshes.values()) {
+                for (MeshRenderSection section : sortedSections) {
                     SectionMesh sectionMesh = section.getSectionMesh();
                     int uboIndex = -1;
 
