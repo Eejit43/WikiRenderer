@@ -9,7 +9,7 @@ import com.pigicial.wikirenderer.property.GlobalProperties;
 import com.pigicial.wikirenderer.property.IntProperty;
 import com.pigicial.wikirenderer.render.CameraOrientationUtil;
 import com.pigicial.wikirenderer.render.DefaultRenderable;
-import com.pigicial.wikirenderer.render.ParticleDisplayCondition;
+import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
 import com.pigicial.wikirenderer.render.area.bounds.ChunkScannedMeshBounds;
 import com.pigicial.wikirenderer.render.area.bounds.MeshBounds;
 import com.pigicial.wikirenderer.render.area.bounds.SingleCuboidMeshBounds;
@@ -24,6 +24,7 @@ import com.pigicial.wikirenderer.render.export.ExportPathSpec;
 import com.pigicial.wikirenderer.render.export.RenderableDispatcher;
 import com.pigicial.wikirenderer.render.export.ffmpeg.AnimationHandler;
 import com.pigicial.wikirenderer.render.item.AnimationTimingsProvider;
+import com.pigicial.wikirenderer.render.particle.ParticleRendererAndLooper;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.util.*;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -188,7 +189,7 @@ public class AreaRenderable extends DefaultRenderable<AreaPropertyBundle> implem
                 Vec3 diff = Vec3.atLowerCornerOf(minCorner).subtract(client.player.trackingPosition());
                 standardStack.pushPose();
                 standardStack.translate(-diff.x, -diff.y + 1.65, -diff.z);
-                this.drawParticles(standardStack.last().pose(), tickDelta);
+                ParticleRendererAndLooper.drawParticles(this, standardStack.last().pose(), tickDelta);
                 standardStack.popPose();
             }
 

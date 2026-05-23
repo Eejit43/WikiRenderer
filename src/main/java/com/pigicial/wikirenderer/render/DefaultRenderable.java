@@ -10,6 +10,8 @@ import com.pigicial.wikirenderer.mixin.access.LightmapRenderStateExtractorAccess
 import com.pigicial.wikirenderer.property.DefaultPropertyBundle;
 import com.pigicial.wikirenderer.property.GlobalProperties;
 import net.minecraft.client.Camera;
+import com.pigicial.wikirenderer.mixin.access.LightTextureAccessor;
+import com.pigicial.wikirenderer.property.DefaultPropertyBundle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Lightmap;
 import net.minecraft.client.renderer.LightmapRenderStateExtractor;
@@ -17,9 +19,8 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.LightmapRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.state.level.ParticlesRenderState;
+import net.minecraft.client.renderer.LightTexture;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 
@@ -28,7 +29,6 @@ import java.nio.ByteBuffer;
 public abstract class DefaultRenderable<P extends DefaultPropertyBundle> implements Renderable<P> {
 
     protected static final int LIGHTING_UBO_SIZE = new Std140SizeCalculator().putVec3().putVec3().get();
-    public static final Frustum ALWAYS_TRUE_PARTICLE_FRUSTUM = new Frustum(new Matrix4f(), new Matrix4f());
 
     protected GpuBuffer lightingBuffer;
     protected String customFileName = null;
@@ -122,50 +122,5 @@ public abstract class DefaultRenderable<P extends DefaultPropertyBundle> impleme
     @Override
     public void setCustomFileName(@Nullable String fileName) {
         this.customFileName = fileName;
-    }
-
-    protected void drawParticles(Matrix4f transform, float tickDelta) {
-        if (!GlobalProperties.get().tickParticles.get()) {
-            return;
-        }
-
-        Matrix4fStack modelView = RenderSystem.getModelViewStack();
-        modelView.pushMatrix();
-        modelView.mul(transform);
-
-        Minecraft client = Minecraft.getInstance();
-        // present in vanilla
-
-        Camera camera = Minecraft.getInstance().getEntityRenderDispatcher().camera;
-        if (camera == null) return;
-
-        float previousYaw = camera.yRot();
-        float previousPitch = camera.xRot();
-
-        ((CameraInvoker) camera).wikirenderer$setRotation(this.getProperties().getUsedRotation() + 180, (float) this.getProperties().getUsedSlant());
-        ParticlesRenderState particleBatch = new ParticlesRenderState();
-
-        client.particleEngine.extract(
-                particleBatch,
-                ALWAYS_TRUE_PARTICLE_FRUSTUM,
-                camera,
-                tickDelta
-        );
-
-        /* create render state from camera object; (mostly) mirrors GameRenderer.updateCameraState */
-        CameraRenderState cameraRenderState = CameraOrientationUtil.createRenderState(this);
-        cameraRenderState.initialized = true;
-        cameraRenderState.pos = camera.position();
-        cameraRenderState.blockPos = camera.blockPosition();
-        cameraRenderState.pos = camera.entity().getPosition(tickDelta);
-
-        /* submit and render to vertexconsumers */
-        particleBatch.submit(client.gameRenderer.getSubmitNodeStorage(), cameraRenderState);
-        this.drawSubmittedRenderFeatures();
-        particleBatch.reset();
-
-        ((CameraInvoker) camera).wikirenderer$setRotation(previousYaw, previousPitch);
-
-        modelView.popMatrix();
     }
 }

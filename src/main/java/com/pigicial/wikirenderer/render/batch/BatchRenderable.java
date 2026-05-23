@@ -3,7 +3,7 @@ package com.pigicial.wikirenderer.render.batch;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.pigicial.wikirenderer.WikiRenderer;
 import com.pigicial.wikirenderer.property.CroppablePropertyBundle;
-import com.pigicial.wikirenderer.render.ParticleDisplayCondition;
+import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
 import com.pigicial.wikirenderer.render.Renderable;
 import com.pigicial.wikirenderer.render.export.ExportPathSpec;
 import com.pigicial.wikirenderer.render.export.FileIO;

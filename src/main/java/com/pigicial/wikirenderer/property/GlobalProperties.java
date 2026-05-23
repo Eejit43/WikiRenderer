@@ -31,9 +31,10 @@ public class GlobalProperties implements SerializablePropertyBundle {
     public final Property<Boolean> syncRotationToAnimation = Property.of(false);
     public final Property<Boolean> syncTextureAnimationsToAnimation = Property.of(false);
     public final Property<Boolean> setAnimationFpsCap = Property.of(true);
+    public final Property<Boolean> loopParticles = Property.of(false);
 
-    public final IntProperty exportFramerate = IntProperty.of(25, 1, 300);
-    public final IntProperty exportFrames = IntProperty.of(50, 1, 5000);
+    public final IntProperty exportFramerate = IntProperty.of(20, 1, 300);
+    public final IntProperty exportFrames = IntProperty.of(60, 1, 5000);
     public AnimationHandlingMode animationHandlingMode = AnimationHandlingMode.LIVE_FFMPEG;
     public FFmpegDispatcher.Format animationFormat = FFmpegDispatcher.Format.GIF;
     public Property<Boolean> saveIndividualFrames = Property.of(false);

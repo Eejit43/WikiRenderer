@@ -262,6 +262,7 @@
   "gui.wikirenderer.exporter.idle": "Exporter Idle",
   "gui.wikirenderer.exporter.jobs": "Export Jobs: %s",
 
+  "gui.wikirenderer.loop_particles": "Loop Particles",
   "gui.wikirenderer.save_individual_frames": "Save Individual Frames",
   "gui.wikirenderer.animation_mode_selected_instant_file_save": "Animation Mode: Disk-Cache Intensive",
   "gui.wikirenderer.animation_mode_selected_save_in_memory": "Animation Mode: Memory-Cache Intensive",

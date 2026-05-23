@@ -472,7 +472,7 @@ public class WorldBlockMesh {
     }
 
     public void dispose() {
-        subMeshes.values().forEach(SectionRenderDispatcher.RenderSection::reset);
+        subMeshes.values().forEach(MeshRenderSection::reset);
         subMeshes.clear();
         resortBufferPack.close();
     }

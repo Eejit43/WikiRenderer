@@ -1,4 +1,4 @@
-package com.pigicial.wikirenderer.mixin.world;
+package com.pigicial.wikirenderer.mixin.world.particle;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(value = ParticleFeatureRenderer.class, priority = 2000)
 public class ParticleFeatureRendererMixin {
+
     @WrapOperation(
             method = "render",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getMainRenderTarget()Lcom/mojang/blaze3d/pipeline/RenderTarget;")

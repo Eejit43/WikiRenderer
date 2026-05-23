@@ -1,8 +1,9 @@
-package com.pigicial.wikirenderer.mixin.world;
+package com.pigicial.wikirenderer.mixin.world.particle;
 
 import com.pigicial.wikirenderer.WikiRenderer;
 import com.pigicial.wikirenderer.property.GlobalProperties;
-import com.pigicial.wikirenderer.render.ParticleDisplayCondition;
+import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
+import com.pigicial.wikirenderer.render.particle.ParticleRendererAndLooper;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -26,6 +27,18 @@ public class ParticleEngineMixin {
         ParticleDisplayCondition restriction = WikiRenderer.particleDisplayCondition;
         if (!restriction.test(particle)) {
             ci.cancel();
+        }
+
+        if (WikiRenderer.currentAnimationHandler != null && ParticleRendererAndLooper.canLoopParticles()) {
+            int animationLifespan = WikiRenderer.currentAnimationHandler.getAnimationFrames();
+            int animationFrameIndex = animationLifespan - WikiRenderer.currentAnimationHandler.getRemainingFrames();
+            int particleLifespan = particle.getLifetime();
+
+            boolean loopable = particleLifespan <= animationLifespan && (animationFrameIndex + particleLifespan) <= animationLifespan;
+
+            if (!loopable) {
+                ci.cancel();
+            }
         }
     }
 }

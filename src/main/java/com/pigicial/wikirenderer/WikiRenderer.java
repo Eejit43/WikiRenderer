@@ -8,7 +8,7 @@ import com.pigicial.wikirenderer.command.WikiRendererCommand;
 import com.pigicial.wikirenderer.components.AreaSelectionComponent;
 import com.pigicial.wikirenderer.components.IOStateComponent;
 import com.pigicial.wikirenderer.render.OrthographicSort;
-import com.pigicial.wikirenderer.render.ParticleDisplayCondition;
+import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
 import com.pigicial.wikirenderer.render.area.AreaSelectionHelper;
 import com.pigicial.wikirenderer.render.area.MeshWorldOverrides;
 import com.pigicial.wikirenderer.render.export.FileIO;

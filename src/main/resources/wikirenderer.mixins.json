@@ -30,6 +30,7 @@
     "access.ModelPartAccessor",
     "access.NativeImageAccessor",
     "access.NativeImageInvoker",
+    "access.ParticleAccessor",
     "access.ParticleEngineAccessor",
     "access.RenderSectionInvoker",
     "access.SpriteContentsAccessor",
@@ -63,10 +64,10 @@
     "world.LightmapRenderStateExtractorMixin",
     "world.MapRendererMixin",
     "world.MixinChunkSectionLayer",
-    "world.ParticleEngineMixin",
-    "world.ParticleFeatureRendererMixin",
     "world.ProjectionTypeMixin",
-    "world.QuadParticleGroupMixin"
+    "world.particle.ParticleEngineMixin",
+    "world.particle.ParticleFeatureRendererMixin",
+    "world.particle.QuadParticleGroupMixin"
   ],
   "injectors": {
     "defaultRequire": 1

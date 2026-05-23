@@ -1,4 +1,4 @@
-package com.pigicial.wikirenderer.render;
+package com.pigicial.wikirenderer.render.particle;
 
 import com.pigicial.wikirenderer.WikiRenderer;
 import net.minecraft.client.particle.Particle;

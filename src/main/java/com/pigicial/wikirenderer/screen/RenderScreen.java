@@ -12,7 +12,7 @@ import com.pigicial.wikirenderer.components.NotificationComponent;
 import com.pigicial.wikirenderer.property.*;
 import com.pigicial.wikirenderer.property.config.WikiRendererConfigs;
 import com.pigicial.wikirenderer.render.DefaultRenderable;
-import com.pigicial.wikirenderer.render.ParticleDisplayCondition;
+import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
 import com.pigicial.wikirenderer.render.Renderable;
 import com.pigicial.wikirenderer.render.TickingRenderable;
 import com.pigicial.wikirenderer.render.area.AreaRenderable;
@@ -383,6 +383,7 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
         }
 
         WikiRendererUI.booleanControl(rightColumn, globalProperties.setAnimationFpsCap, "render_with_game_timings");
+        WikiRendererUI.conditionalBooleanControl(rightColumn, globalProperties.loopParticles, "loop_particles", () -> globalProperties.setAnimationFpsCap.get() && globalProperties.exportFramerate.get() == 20);
 
         try (WikiRendererUI.RowBuilder builder = WikiRendererUI.autoNewLineRow(rightColumn)) {
             this.exportAnimationButton = UIComponents.button(Translate.gui("export_animation"), _ -> this.queueAnimationExport());

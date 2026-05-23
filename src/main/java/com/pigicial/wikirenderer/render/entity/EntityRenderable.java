@@ -9,13 +9,14 @@ import com.pigicial.wikirenderer.mixin.access.ItemStackRenderStateAccessor;
 import com.pigicial.wikirenderer.mixin.access.MannequinAccessor;
 import com.pigicial.wikirenderer.render.CameraOrientationUtil;
 import com.pigicial.wikirenderer.render.DefaultRenderable;
-import com.pigicial.wikirenderer.render.ParticleDisplayCondition;
+import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
 import com.pigicial.wikirenderer.render.batch.DynamicBatchLabelProvider;
 import com.pigicial.wikirenderer.render.entity.options.EntityTypeSpecificOverrides;
 import com.pigicial.wikirenderer.render.entity.player.RenderablePlayerEntity;
 import com.pigicial.wikirenderer.render.export.ExportPathSpec;
 import com.pigicial.wikirenderer.render.export.RenderableDispatcher;
 import com.pigicial.wikirenderer.render.item.AnimationTimingsProvider;
+import com.pigicial.wikirenderer.render.particle.ParticleRendererAndLooper;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.textures.PlayerTextureUtils;
 import com.pigicial.wikirenderer.textures.TextureData;
@@ -332,7 +333,7 @@ public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> im
             }
             matrices.translate(-playerDifference.x, -playerDifference.y, -playerDifference.z);
 
-            this.drawParticles(matrices.last().pose(), delta);
+            ParticleRendererAndLooper.drawParticles(this, matrices.last().pose(), delta);
             matrices.popPose();
         }
 
