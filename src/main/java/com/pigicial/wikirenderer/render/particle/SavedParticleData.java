@@ -2,7 +2,7 @@ package com.pigicial.wikirenderer.render.particle;
 
 import com.pigicial.wikirenderer.mixin.access.ParticleAccessor;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.renderer.state.ParticleGroupRenderState;
+import net.minecraft.client.renderer.state.level.ParticleGroupRenderState;
 
 import java.util.HashMap;
 import java.util.Map;

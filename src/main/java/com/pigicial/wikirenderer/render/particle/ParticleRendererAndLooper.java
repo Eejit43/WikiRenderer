@@ -12,9 +12,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.client.renderer.state.ParticleGroupRenderState;
-import net.minecraft.client.renderer.state.ParticlesRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.state.level.ParticleGroupRenderState;
+import net.minecraft.client.renderer.state.level.ParticlesRenderState;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
@@ -70,7 +70,7 @@ public class ParticleRendererAndLooper {
         cameraRenderState.initialized = true;
         cameraRenderState.pos = camera.position();
         cameraRenderState.blockPos = camera.blockPosition();
-        cameraRenderState.entityPos = camera.entity().getPosition(tickDelta);
+        cameraRenderState.pos = camera.entity().getPosition(tickDelta);
 
         /* submit and render to vertexconsumers */
         SubmitNodeStorage submitNodeStorage = client.gameRenderer.getSubmitNodeStorage();
