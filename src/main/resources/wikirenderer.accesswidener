@@ -2,3 +2,5 @@ accessWidener v1 official
 
 accessible field net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture frames Ljava/util/List;
 accessible class net/minecraft/client/renderer/texture/SpriteContents$FrameInfo
+accessible class net/minecraft/client/particle/ElderGuardianParticleGroup$ElderGuardianParticleRenderState
+accessible class net/minecraft/client/particle/ElderGuardianParticleGroup$State

@@ -65,6 +65,7 @@
     "world.MapRendererMixin",
     "world.MixinChunkSectionLayer",
     "world.ProjectionTypeMixin",
+    "world.particle.ElderGuardianParticleGroupMixin",
     "world.particle.ParticleEngineMixin",
     "world.particle.ParticleFeatureRendererMixin",
     "world.particle.QuadParticleGroupMixin"

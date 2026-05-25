@@ -12,7 +12,6 @@ import com.pigicial.wikirenderer.components.NotificationComponent;
 import com.pigicial.wikirenderer.property.*;
 import com.pigicial.wikirenderer.property.config.WikiRendererConfigs;
 import com.pigicial.wikirenderer.render.DefaultRenderable;
-import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
 import com.pigicial.wikirenderer.render.Renderable;
 import com.pigicial.wikirenderer.render.TickingRenderable;
 import com.pigicial.wikirenderer.render.area.AreaRenderable;
@@ -27,6 +26,8 @@ import com.pigicial.wikirenderer.render.export.ffmpeg.FFmpegDispatcher;
 import com.pigicial.wikirenderer.render.export.ffmpeg.MemoryGuard;
 import com.pigicial.wikirenderer.render.export.ffmpeg.live.LiveRenderFFmpegAnimationHandler;
 import com.pigicial.wikirenderer.render.item.AnimationTimingsProvider;
+import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
+import com.pigicial.wikirenderer.render.particle.ParticleRendererAndLooper;
 import com.pigicial.wikirenderer.textures.TextureDataProvider;
 import com.pigicial.wikirenderer.util.Translate;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
@@ -384,6 +385,16 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
 
         WikiRendererUI.booleanControl(rightColumn, globalProperties.setAnimationFpsCap, "render_with_game_timings");
         WikiRendererUI.conditionalBooleanControl(rightColumn, globalProperties.loopParticles, "loop_particles", () -> globalProperties.setAnimationFpsCap.get() && globalProperties.exportFramerate.get() == 20);
+        WikiRendererUI.dynamicConditionalText(rightColumn, () -> globalProperties.loopParticles.get() && globalProperties.setAnimationFpsCap.get() && globalProperties.exportFramerate.get() == 20, () -> {
+            int existingTotal = ParticleRendererAndLooper.getAtLeastPartiallySavedParticleCount();
+            int fullySavedTotal = ParticleRendererAndLooper.getFullySavedParticleCount();
+            if (existingTotal == fullySavedTotal) {
+                return Translate.gui("loop_particles_ready").withStyle(ChatFormatting.GREEN);
+            } else {
+                int percentage = (int) (100D * (fullySavedTotal / (double) existingTotal));
+                return Translate.gui("loop_particles_not_ready", percentage + "%").withStyle(ChatFormatting.RED);
+            }
+        });
 
         try (WikiRendererUI.RowBuilder builder = WikiRendererUI.autoNewLineRow(rightColumn)) {
             this.exportAnimationButton = UIComponents.button(Translate.gui("export_animation"), _ -> this.queueAnimationExport());

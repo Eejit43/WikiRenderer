@@ -30,8 +30,9 @@ public class ParticleRendererAndLooper {
     };
 
     private static final HashMap<Particle, SavedParticleData> SAVED_PARTICLES = new HashMap<>();
-    public static boolean saving = false;
-    public static boolean looping = false;
+    public static boolean renderingParticles = false;
+    public static boolean renderingAndSavingParticlesForLooping = false;
+    public static boolean loopingParticles = false;
 
     public static void drawParticles(Renderable<? extends DefaultPropertyBundle> renderable, Matrix4f transform, float tickDelta) {
         if (!GlobalProperties.get().tickParticles.get()) {
@@ -51,33 +52,33 @@ public class ParticleRendererAndLooper {
         float previousYaw = camera.yRot();
         float previousPitch = camera.xRot();
 
+        /* create render state from camera object; (mostly) mirrors GameRenderer.updateCameraState */
+        CameraRenderState cameraRenderState = CameraOrientationUtil.createRenderState(renderable);
+        cameraRenderState.initialized = true;
+        cameraRenderState.pos = camera.position();
+        cameraRenderState.blockPos = camera.blockPosition();
+
         ((CameraInvoker) camera).wikirenderer$setRotation(renderable.getProperties().getUsedRotation() + 180, (float) renderable.getProperties().getUsedSlant());
         ParticlesRenderState particleBatch = new ParticlesRenderState();
 
-        looping = WikiRenderer.currentAnimationHandler != null && canLoopParticles();
-        saving = true;
+        loopingParticles = WikiRenderer.currentAnimationHandler != null && canLoopParticles();
+        renderingAndSavingParticlesForLooping = canLoopParticles();
+        renderingParticles = true;
         // todo make this work for non-quad-particles
 
         client.particleEngine.extract(
                 particleBatch,
                 ALWAYS_TRUE_PARTICLE_FRUSTUM,
                 camera,
-                looping ? 0 : tickDelta // 0 for looping to ensure tickDelta consistency
+                loopingParticles ? 0 : tickDelta // 0 for looping to ensure tickDelta consistency
         );
-
-        /* create render state from camera object; (mostly) mirrors GameRenderer.updateCameraState */
-        CameraRenderState cameraRenderState = CameraOrientationUtil.createRenderState(renderable);
-        cameraRenderState.initialized = true;
-        cameraRenderState.pos = camera.position();
-        cameraRenderState.blockPos = camera.blockPosition();
-        cameraRenderState.pos = camera.entity().getPosition(tickDelta);
 
         /* submit and render to vertexconsumers */
         SubmitNodeStorage submitNodeStorage = client.gameRenderer.getSubmitNodeStorage();
         particleBatch.submit(submitNodeStorage, cameraRenderState);
 
         handleCompletedParticles();
-        if (looping) {
+        if (loopingParticles) {
 
             int animationLifespan = WikiRenderer.currentAnimationHandler.getAnimationFrames(); // guaranteed to be 20 per second
             int animationCurrentFrame = animationLifespan - WikiRenderer.currentAnimationHandler.getRemainingFrames();
@@ -102,13 +103,27 @@ public class ParticleRendererAndLooper {
         renderable.drawSubmittedRenderFeatures();
         particleBatch.reset();
 
-        looping = false;
-        saving = false;
-
+        loopingParticles = false;
+        renderingAndSavingParticlesForLooping = false;
+        renderingParticles = false;
 
         ((CameraInvoker) camera).wikirenderer$setRotation(previousYaw, previousPitch);
 
         modelView.popMatrix();
+    }
+
+    public static int getAtLeastPartiallySavedParticleCount() {
+        return SAVED_PARTICLES.size();
+    }
+
+    public static int getFullySavedParticleCount() {
+        int amount = 0;
+        for (SavedParticleData data : SAVED_PARTICLES.values()) {
+            if (data.getRenderDataAtTick(0) != null || data.getRenderDataAtTick(1) != null) {
+                amount++;
+            }
+        }
+        return amount;
     }
 
     public static boolean canLoopParticles() {
@@ -119,8 +134,8 @@ public class ParticleRendererAndLooper {
         if (!particle.isAlive()) return;
 
         SavedParticleData savedParticleData = SAVED_PARTICLES.get(particle);
-        if (savedParticleData == null && looping) {
-            // don't bother saving if it's mid-loop already
+        if (savedParticleData == null && loopingParticles) {
+            // don't bother saving new particles if it's mid-loop already
             return;
         }
 
@@ -149,4 +164,5 @@ public class ParticleRendererAndLooper {
             }
         }
     }
+
 }

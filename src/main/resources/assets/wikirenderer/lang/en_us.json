@@ -263,6 +263,8 @@
   "gui.wikirenderer.exporter.jobs": "Export Jobs: %s",
 
   "gui.wikirenderer.loop_particles": "Loop Particles",
+  "gui.wikirenderer.loop_particles_not_ready": "Not Ready: %s of particles saved...",
+  "gui.wikirenderer.loop_particles_ready": "Ready: All particles saved!",
   "gui.wikirenderer.save_individual_frames": "Save Individual Frames",
   "gui.wikirenderer.animation_mode_selected_instant_file_save": "Animation Mode: Disk-Cache Intensive",
   "gui.wikirenderer.animation_mode_selected_save_in_memory": "Animation Mode: Memory-Cache Intensive",
