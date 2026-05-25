@@ -7,6 +7,7 @@ import com.pigicial.wikirenderer.property.DefaultPropertyBundle;
 import com.pigicial.wikirenderer.property.GlobalProperties;
 import com.pigicial.wikirenderer.render.CameraOrientationUtil;
 import com.pigicial.wikirenderer.render.Renderable;
+import com.pigicial.wikirenderer.render.export.ffmpeg.AnimationHandler;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -61,10 +62,12 @@ public class ParticleRendererAndLooper {
         ((CameraInvoker) camera).wikirenderer$setRotation(renderable.getProperties().getUsedRotation() + 180, (float) renderable.getProperties().getUsedSlant());
         ParticlesRenderState particleBatch = new ParticlesRenderState();
 
-        loopingParticles = WikiRenderer.currentAnimationHandler != null && canLoopParticles();
+        AnimationHandler animationHandler = WikiRenderer.currentAnimationHandler; // store here because it can become null later due to ffmpeg async file saving
+        boolean setLooping = animationHandler != null && canLoopParticles();
+
+        loopingParticles = setLooping;
         renderingAndSavingParticlesForLooping = canLoopParticles();
         renderingParticles = true;
-        // todo make this work for non-quad-particles
 
         client.particleEngine.extract(
                 particleBatch,
@@ -78,10 +81,10 @@ public class ParticleRendererAndLooper {
         particleBatch.submit(submitNodeStorage, cameraRenderState);
 
         handleCompletedParticles();
-        if (loopingParticles) {
+        if (setLooping) {
 
-            int animationLifespan = WikiRenderer.currentAnimationHandler.getAnimationFrames(); // guaranteed to be 20 per second
-            int animationCurrentFrame = animationLifespan - WikiRenderer.currentAnimationHandler.getRemainingFrames();
+            int animationLifespan = animationHandler.getAnimationFrames(); // guaranteed to be 20 per second
+            int animationCurrentFrame = animationLifespan - animationHandler.getRemainingFrames();
 
             for (SavedParticleData savedParticle : SAVED_PARTICLES.values()) {
                 if (!savedParticle.getParticle().isAlive() && savedParticle.getAnimationTimeFinishedAt() != null) {
