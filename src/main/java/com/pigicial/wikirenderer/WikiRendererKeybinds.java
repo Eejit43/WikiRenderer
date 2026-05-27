@@ -81,29 +81,29 @@ public class WikiRendererKeybinds {
             }
         });
 
-        ScreenEvents.AFTER_INIT.register((client, screen, _, _) -> ScreenKeyboardEvents.afterKeyPress(screen).register((_, key) -> {
-            if (key.key() == KeyMappingHelper.getBoundKeyOf(KEYBIND_RENDER_HOVERED_ITEM_OR_VIEWED_ENTITY).getValue()) {
+        ScreenEvents.AFTER_INIT.register((client, screen, _, _) -> ScreenKeyboardEvents.afterKeyPress(screen).register((s, key) -> {
+            if (KEYBIND_RENDER_HOVERED_ITEM_OR_VIEWED_ENTITY.matches(key)) {
                 ItemStack hoveredSlot = getHoveredSlot(client);
                 if (hoveredSlot != null) {
                     ScreenSchedulerAndSaver.openImmediately(new RenderScreen(new ItemRenderable(hoveredSlot)));
                 }
             }
 
-            if (key.key() == KeyMappingHelper.getBoundKeyOf(KEYBIND_RENDER_HOVERED_ITEM_TOOLTIP).getValue()) {
+            if (KEYBIND_RENDER_HOVERED_ITEM_TOOLTIP.matches(key)) {
                 ItemStack hoveredSlot = getHoveredSlot(client);
                 if (hoveredSlot != null) {
                     ScreenSchedulerAndSaver.openImmediately(new RenderScreen(new TooltipRenderable(hoveredSlot)));
                 }
             }
 
-            if (key.key() == KeyMappingHelper.getBoundKeyOf(KEYBIND_BATCH_RENDER_INVENTORY_ITEMS).getValue()) {
+            if (KEYBIND_BATCH_RENDER_INVENTORY_ITEMS.matches(key)) {
                 List<ItemStack> items = getItems(client);
                 if (items != null && !items.isEmpty()) {
                     Minecraft.getInstance().setScreen(new SelectRenderTaskScreen(items));
                 }
             }
 
-            if (key.key() == KeyMappingHelper.getBoundKeyOf(KEYBIND_RENDER_INVENTORY).getValue()) {
+            if (KEYBIND_RENDER_INVENTORY.matches(key)) {
                 Screen currentScreen = client.screen;
                 if (currentScreen instanceof AbstractContainerScreen<?> containerScreen) {
                     ScreenSchedulerAndSaver.openImmediately(new RenderScreen(new ContainerScreenRenderable(containerScreen)));
