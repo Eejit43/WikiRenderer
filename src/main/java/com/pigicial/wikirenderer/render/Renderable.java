@@ -50,8 +50,6 @@ public interface Renderable<P extends PropertyBundle> {
 
     default void dispose() {}
 
-    default void onScreenClose() {}
-
     default int getExportResolution() {
         return getProperties().getExportResolution(this);
     }

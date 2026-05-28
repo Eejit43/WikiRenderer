@@ -74,11 +74,6 @@ public class ContainerScreenRenderable extends DefaultRenderable<ContainerScreen
     }
 
     @Override
-    public void onScreenClose() {
-        containerScreen.onClose();
-    }
-
-    @Override
     public void emitVerticesThenDraw(RenderScreen renderScreen, Matrix4fStack modelViewStack, PoseStack poseStack, float tickDelta, long timeSinceCreationMs) {
         WikiRenderer.inContainerScreenDraw = true;
         WikiRenderer.animationTimingDataRequestedToFill = new ArrayList<>();
