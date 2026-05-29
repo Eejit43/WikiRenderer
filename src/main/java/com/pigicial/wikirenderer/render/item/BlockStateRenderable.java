@@ -131,7 +131,7 @@ public class BlockStateRenderable
         // renders the extra stuff, like the book on the enchantment table, middle bell within the bell block, etc
         BlockEntityRenderState renderState = this.blockEntity == null ? null : this.client.getBlockEntityRenderDispatcher().tryExtractRenderState(blockEntity, tickDelta, null);
         if (renderState != null) {
-            renderState.lightCoords = LightTexture.FULL_BRIGHT;
+            renderState.lightCoords = LightCoordsUtil.FULL_BRIGHT;
             this.client.getBlockEntityRenderDispatcher().submit(renderState, matrices, this.client.gameRenderer.getSubmitNodeStorage(), CameraUtil.createRenderState(this));
         }
 
