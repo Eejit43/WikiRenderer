@@ -40,7 +40,12 @@ public abstract class AnimationHandler implements AutoCloseable {
     protected AnimationHandler(RenderScreen screen, Renderable<?> renderable, int framesToRender) {
         this.screen = screen;
         this.renderable = renderable;
-        this.framesFolderName = "sequence_frames/" + UUID.randomUUID();
+
+        ExportPathSpec defaultExportPath = this.renderable.getExportPath();
+        ExportPathSpec exportPath = defaultExportPath.differentFileName(renderable.getCustomFileName());
+        String fileName = exportPath.filename();
+
+        this.framesFolderName = "sequence_frames/" + fileName + "-" + UUID.randomUUID();
         this.framesFolder = ExportPathSpec.exportRoot().resolve(this.framesFolderName + "/");
         this.animationFrames = framesToRender;
         this.remainingAnimationFrames = framesToRender;

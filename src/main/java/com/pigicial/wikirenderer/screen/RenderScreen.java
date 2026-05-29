@@ -34,6 +34,7 @@ import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
 import com.pigicial.wikirenderer.render.particle.ParticleRendererAndLooper;
 import com.pigicial.wikirenderer.textures.TextureDataProvider;
 import com.pigicial.wikirenderer.util.Translate;
+import com.pigicial.wikirenderer.util.compatibility.ShaderCheck;
 import io.wispforest.owo.ui.base.BaseOwoScreen;
 import io.wispforest.owo.ui.component.ButtonComponent;
 import io.wispforest.owo.ui.component.TextBoxComponent;
@@ -391,6 +392,12 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
     }
 
     private void buildAnimationSection() {
+        if (ShaderCheck.isUsingShaders()) {
+            // they don't work due to LevelRendererMixin skipping the world render from skipWorldRender
+            WikiRendererUI.text(rightColumn, "shader_animations_unsupported", 5);
+            return;
+        }
+
         GlobalProperties globalProperties = GlobalProperties.get();
         try (WikiRendererUI.RowBuilder builder = WikiRendererUI.autoNewLineRow(rightColumn)) {
             this.exportAnimationButton = UIComponents.button(Translate.gui("export_animation"), button -> this.queueAnimationExport());

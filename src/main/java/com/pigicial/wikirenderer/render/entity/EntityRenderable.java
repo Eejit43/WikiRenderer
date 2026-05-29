@@ -9,13 +9,13 @@ import com.pigicial.wikirenderer.mixin.access.ItemStackRenderStateAccessor;
 import com.pigicial.wikirenderer.mixin.access.MannequinAccessor;
 import com.pigicial.wikirenderer.render.CameraUtil;
 import com.pigicial.wikirenderer.render.DefaultRenderable;
-import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
 import com.pigicial.wikirenderer.render.batch.DynamicBatchLabelProvider;
 import com.pigicial.wikirenderer.render.entity.options.EntityTypeSpecificOverrides;
 import com.pigicial.wikirenderer.render.entity.player.RenderablePlayerEntity;
 import com.pigicial.wikirenderer.render.export.ExportPathSpec;
 import com.pigicial.wikirenderer.render.export.RenderableDispatcher;
 import com.pigicial.wikirenderer.render.item.AnimationTimingsProvider;
+import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
 import com.pigicial.wikirenderer.render.particle.ParticleRendererAndLooper;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.textures.PlayerTextureUtils;
@@ -69,7 +69,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> implements TextureDataProvider, DynamicBatchLabelProvider, AnimationTimingsProvider {
 
@@ -84,7 +83,6 @@ public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> im
     protected final Entity clonedTickableEntity;
 
     public List<Entity> nearbyEntitiesToShow = new ArrayList<>();
-    private boolean nearbyEntitiesFrozen = false;
     private boolean nearbyEntitiesLoaded = false;
 
     private final Map<String, TextureData> textureData = new LinkedHashMap<>();
@@ -165,7 +163,8 @@ public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> im
 
     private void refreshSurroundingVisibleEntities(long timeSinceCreationMs) {
         EntityPropertyBundle properties = getProperties();
-        if (liveNonTickableEntity == null || !properties.showSurroundingEntities.get() || properties.surroundingEntitiesRadius.get() == 0) {
+        boolean isUsingLiveEntity = isUsingLiveEntity();
+        if (!isUsingLiveEntity || !properties.showSurroundingEntities.get() || properties.surroundingEntitiesRadius.get() == 0) {
             this.nearbyEntitiesToShow.clear();
             return;
         }
@@ -204,29 +203,7 @@ public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> im
             });
         }
 
-        if (!isUsingLiveEntity()) {
-            if (!this.nearbyEntitiesFrozen) {
-                this.nearbyEntitiesFrozen = true;
-
-                this.nearbyEntitiesToShow = this.nearbyEntitiesToShow
-                        .stream()
-                        .map(originalEntity -> {
-                            if (originalEntity == clonedTickableEntity || originalEntity == liveNonTickableEntity)
-                                return null;
-                            Entity clonedEntity = EntityCloner.copy(originalEntity);
-                            if (clonedEntity == null) return null;
-                            FAKE_TO_REAL_ENTITY_ID_MAP.put(clonedEntity.getId(), originalEntity.getId());
-
-                            return clonedEntity;
-                        })
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
-            }
-            return;
-        }
-
         this.nearbyEntitiesToShow.removeIf(Entity::isRemoved);
-        this.nearbyEntitiesFrozen = false;
     }
 
     public void forBaseAndSurroundingEntities(Entity baseEntity, BiConsumer<Entity, Boolean> predicate) {

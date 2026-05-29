@@ -281,7 +281,9 @@ public class AreaPropertyBundle extends DefaultCroppablePropertyBundle implement
 
             WikiRendererUI.dynamicText(builder.row, () -> {
                 MutableComponent meshStatusText;
-                if (!mesh.getMeshState().isBuildStage) {
+                if (hideMesh.get()) {
+                    meshStatusText = Translate.gui("mesh_hidden").withStyle(ChatFormatting.GRAY);
+                } else if (!mesh.getMeshState().isBuildStage) {
                     meshStatusText = Translate.gui("mesh_ready").withStyle(ChatFormatting.GREEN);
                 } else {
                     meshStatusText = Translate.gui(

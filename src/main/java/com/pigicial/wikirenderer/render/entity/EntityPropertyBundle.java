@@ -48,18 +48,17 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
     public final IntProperty spriteScale = IntProperty.of(200, 0, 1000);
     public int spriteExportResolution = 288;
 
+    public final Property<Boolean> useLiveEntity = Property.of(false);
+    public final Property<Boolean> tickEntityAnimations = Property.of(false);
+
+    // for live entities only
     public final Property<Boolean> showSurroundingEntities = Property.of(false);
     public final DoubleProperty surroundingEntitiesRadius = DoubleProperty.of(0, 0, 30);
-
+    public final Property<Boolean> autoRefreshVisibleSurroundingEntities = Property.of(true);
     public final Property<Boolean> showHiddenSurroundingEntitiesList = Property.of(false);
     public transient String entityTypeSearch = "Visible";
     public final transient List<EntityType<?>> hiddenSurroundingEntityTypes = new ArrayList<>();
-
-    public final Property<Boolean> autoRefreshVisibleSurroundingEntities = Property.of(true);
     public final DoubleProperty surroundingParticlesRadius = DoubleProperty.of(0, 0, 30);
-
-    public final Property<Boolean> useLiveEntity = Property.of(false);
-    public final Property<Boolean> tickEntityAnimations = Property.of(false);
 
     public final Property<Boolean> hideNametags = Property.of(true);
     public final Property<Boolean> overrideHeadRotations = Property.of(true);
@@ -222,7 +221,7 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
         }
         WikiRendererUI.booleanControl(container, this.tickEntityAnimations, "entity_animations");
 
-        if (renderable.liveNonTickableEntity != null) {
+        if (renderable.liveNonTickableEntity != null && useLiveEntity.get()) {
             WikiRendererUI.booleanControl(container, showSurroundingEntities, "show_surrounding_entities");
             showSurroundingEntities.addRebuildListener(screen);
 
@@ -367,6 +366,9 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
             GlobalProperties.get().tickParticles.addRebuildListener(screen);
             if (GlobalProperties.get().tickParticles.get()) {
                 WikiRendererUI.doubleControl(screen, container, surroundingParticlesRadius, "surrounding_particles_radius");
+                if (!useLiveEntity.get()) {
+                    WikiRendererUI.text(container, Translate.gui("show_surrounding_particles_non_live_entities_warning").withStyle(ChatFormatting.RED), 5);
+                }
             }
         }
     }

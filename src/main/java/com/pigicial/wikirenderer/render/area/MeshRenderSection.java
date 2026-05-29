@@ -40,6 +40,7 @@ public class MeshRenderSection extends SectionRenderDispatcher.RenderSection {
     protected List<Integer> animationCompletionTimings = new LinkedList<>();
     protected volatile boolean isBuilding = false;
     protected volatile boolean forceUpdate = false;
+    protected volatile boolean buildAttempted = false;
 
     public MeshRenderSection(SectionRenderDispatcher dispatcher, int sectionX, int sectionY, int sectionZ) {
         dispatcher.super((int) getSectionIndex(sectionX, sectionY, sectionZ), 0);
@@ -166,6 +167,7 @@ public class MeshRenderSection extends SectionRenderDispatcher.RenderSection {
             if (results.renderedLayers.isEmpty()) {
                 reset();
                 setNotDirty();
+                this.blockEntities = blockEntities;
                 return;
             }
 
@@ -197,6 +199,7 @@ public class MeshRenderSection extends SectionRenderDispatcher.RenderSection {
         super.setNotDirty();
         isBuilding = false;
         forceUpdate = false;
+        buildAttempted = true;
     }
 
     @Override
@@ -218,6 +221,14 @@ public class MeshRenderSection extends SectionRenderDispatcher.RenderSection {
         if (animationCompletionTimings != null) {
             animationCompletionTimings.clear();
         }
+    }
+
+    public void markBuildNotAttempted() {
+        buildAttempted = false;
+    }
+
+    public boolean hasBuildBeenAttempted() {
+        return buildAttempted;
     }
 
     public void reSortTransparencyAndSubmit(WorldBlockMesh mesh) {

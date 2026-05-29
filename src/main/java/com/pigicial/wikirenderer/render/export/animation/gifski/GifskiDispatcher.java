@@ -76,7 +76,7 @@ public class GifskiDispatcher {
                 }
 
                 if (!tempFile.toFile().setExecutable(true)) { // required for mac/linux
-                    System.err.println("Warning: Failed to set executable permissions on " + tempFile);
+                    WikiRenderer.LOGGER.warn("Warning: Failed to set executable permissions on {}", tempFile);
                 }
 
                 cachedTempPath = tempFile.toFile().getAbsolutePath();
