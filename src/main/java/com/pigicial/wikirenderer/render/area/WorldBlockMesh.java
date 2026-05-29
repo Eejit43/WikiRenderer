@@ -281,7 +281,7 @@ public class WorldBlockMesh {
                 : MeshState.BUILDING;
 
         this.subMeshes.values().forEach(section -> {
-            section.close();
+            section.reset();
             section.markBuildNotAttempted();
         });
         this.subMeshes.clear();
@@ -316,19 +316,28 @@ public class WorldBlockMesh {
     }
 
     private void updateBuildingStatus() {
-        if (currentlyFullyBuilding) {
-            int amountBuilt = 0;
-            for (MeshRenderSection sections : this.subMeshes.values()) {
-                if (sections.hasBuildBeenAttempted()) amountBuilt++;
-            }
-            this.fullBuildProgress = (float) amountBuilt / this.subMeshes.size();
-
-            if (amountBuilt == this.subMeshes.size()) {
-                currentlyFullyBuilding = false;
-                buildingCancelled = false;
-                this.state = MeshState.READY;
-            }
+        int amountBuilt = 0;
+        for (MeshRenderSection sections : this.subMeshes.values()) {
+            if (sections.hasBuildBeenAttempted()) amountBuilt++;
         }
+
+        if (amountBuilt == this.subMeshes.size()) {
+            currentlyFullyBuilding = false;
+            if (buildingCancelled) {
+                state = MeshState.CANCELLED;
+                buildingCancelled = false;
+                return;
+            }
+
+            if (state == MeshState.CANCELLED) {
+                return;
+            }
+
+            buildingCancelled = false;
+            state = MeshState.READY;
+        }
+
+        this.fullBuildProgress = (float) amountBuilt / this.subMeshes.size();
     }
 
     private void updateOutdatedMeshSections() {
@@ -478,7 +487,7 @@ public class WorldBlockMesh {
     }
 
     public void dispose() {
-        subMeshes.values().forEach(MeshRenderSection::close);
+        subMeshes.values().forEach(MeshRenderSection::reset);
         subMeshes.clear();
         resortBufferPack.close();
     }
