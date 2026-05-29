@@ -15,6 +15,7 @@ import com.pigicial.wikirenderer.WikiRenderer;
 import com.pigicial.wikirenderer.render.OrthographicSort;
 import com.pigicial.wikirenderer.render.area.bounds.MeshBounds;
 import com.pigicial.wikirenderer.render.area.side_view.WalkabilityFilter;
+import com.pigicial.wikirenderer.util.compatibility.EntityCullingCheck;
 import com.pigicial.wikirenderer.util.compatibility.ShaderCheck;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
@@ -246,6 +247,7 @@ public class WorldBlockMesh {
         standardStack.pushPose();
         standardStack.translate(-minCorner.getX(), -minCorner.getY(), -minCorner.getZ());
 
+        EntityCullingCheck.disableBlockEntityCullingIfPossible();
         BlockEntityRenderDispatcher blockEntityDispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
         for (MeshRenderSection renderSection : this.subMeshes.values()) {
             renderSection.blockEntities.forEach((blockPos, entity) -> {
@@ -267,6 +269,7 @@ public class WorldBlockMesh {
 
         standardStack.popPose();
         renderable.drawSubmittedRenderFeatures();
+        EntityCullingCheck.reEnableBlockEntityCullingIfNecessary();
     }
 
     public synchronized void scheduleRebuild(boolean async) {
