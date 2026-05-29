@@ -1,10 +1,10 @@
-package com.pigicial.wikirenderer.render.export.ffmpeg.live;
+package com.pigicial.wikirenderer.render.export.animation.ffmpeg.live;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.pigicial.wikirenderer.WikiRenderer;
 import com.pigicial.wikirenderer.mixin.access.NativeImageAccessor;
 import com.pigicial.wikirenderer.property.GlobalProperties;
-import com.pigicial.wikirenderer.render.export.ffmpeg.FFmpegDispatcher;
+import com.pigicial.wikirenderer.render.export.animation.ffmpeg.FFmpegDispatcher;
 import org.lwjgl.system.MemoryUtil;
 
 import java.io.BufferedOutputStream;

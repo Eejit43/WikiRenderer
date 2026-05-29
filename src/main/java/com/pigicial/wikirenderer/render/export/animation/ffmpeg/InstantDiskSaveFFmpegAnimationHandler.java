@@ -1,4 +1,4 @@
-package com.pigicial.wikirenderer.render.export.ffmpeg;
+package com.pigicial.wikirenderer.render.export.animation.ffmpeg;
 
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.pigicial.wikirenderer.WikiRenderer;
@@ -16,12 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public final class InstantDiskSaveAnimationHandler extends AnimationHandler {
+public final class InstantDiskSaveFFmpegAnimationHandler extends FFmpegAnimationHandler {
 
     private final List<CompletableFuture<File>> frameFileExportFutures = new ArrayList<>();
     private int currentFrameIndex = 0;
 
-    public InstantDiskSaveAnimationHandler(RenderScreen screen, Renderable<?> renderable, int framesToRender) {
+    public InstantDiskSaveFFmpegAnimationHandler(RenderScreen screen, Renderable<?> renderable, int framesToRender) {
         super(screen, renderable, framesToRender);
         this.remainingAnimationFrames = framesToRender;
     }

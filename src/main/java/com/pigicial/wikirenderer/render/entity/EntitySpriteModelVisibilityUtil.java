@@ -13,8 +13,7 @@ import java.util.function.Function;
 
 public class EntitySpriteModelVisibilityUtil {
 
-    public static void hideNonHeadParts(LivingEntityRenderer<?, ?, ?> livingEntityRenderer,
-                                        List<Runnable> toggleCallbacks) {
+    public static void hideNonHeadParts(LivingEntityRenderer<?, ?, ?> livingEntityRenderer, List<Runnable> toggleCallbacks) {
         EntityModel<?> model = livingEntityRenderer.getModel();
         EntitySpriteModelVisibilityUtil.hideNonHeadParts(model, toggleCallbacks);
     }
@@ -25,12 +24,12 @@ public class EntitySpriteModelVisibilityUtil {
         Function<String, @Nullable ModelPart> partLookup = root.createPartLookup();
 
         String[] partsToFind = {"head_parts" /* Horse */, "head", "center_head" /* Wither */, "body"};
-
-        for (String part : partsToFind)
+        for (String part : partsToFind) {
             if (partLookup.apply(part) != null) {
                 EntitySpriteModelVisibilityUtil.hideNonHeadParts(toggleCallbacks, root, part);
                 break;
             }
+        }
     }
 
     public static void hideNonHeadParts(List<Runnable> toggleCallbacks, ModelPart part, String headType) {

@@ -1,8 +1,8 @@
 package com.pigicial.wikirenderer.property;
 
 import com.pigicial.wikirenderer.property.config.WikiRendererConfigs;
-import com.pigicial.wikirenderer.render.export.ffmpeg.AnimationHandlingMode;
-import com.pigicial.wikirenderer.render.export.ffmpeg.FFmpegDispatcher;
+import com.pigicial.wikirenderer.render.export.animation.ffmpeg.FFmpegAnimationHandlingMode;
+import com.pigicial.wikirenderer.render.export.animation.AnimationFormat;
 
 public class GlobalProperties implements SerializablePropertyBundle {
 
@@ -35,9 +35,11 @@ public class GlobalProperties implements SerializablePropertyBundle {
 
     public final IntProperty exportFramerate = IntProperty.of(20, 1, 300);
     public final IntProperty exportFrames = IntProperty.of(60, 1, 5000);
-    public AnimationHandlingMode animationHandlingMode = AnimationHandlingMode.LIVE_FFMPEG;
-    public FFmpegDispatcher.Format animationFormat = FFmpegDispatcher.Format.GIF;
+
+    public FFmpegAnimationHandlingMode animationHandlingMode = FFmpegAnimationHandlingMode.LIVE_FFMPEG;
+    public AnimationFormat animationFormat = AnimationFormat.GIF;
     public Property<Boolean> saveIndividualFrames = Property.of(false);
+    public IntProperty gifskiQuality = IntProperty.of(100, 1, 100);
 
     @Override
     public String getConfigFileName() {

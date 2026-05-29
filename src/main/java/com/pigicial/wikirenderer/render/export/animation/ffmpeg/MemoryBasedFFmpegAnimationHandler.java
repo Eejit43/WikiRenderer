@@ -1,4 +1,4 @@
-package com.pigicial.wikirenderer.render.export.ffmpeg;
+package com.pigicial.wikirenderer.render.export.animation.ffmpeg;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.textures.GpuTexture;
@@ -17,10 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class MemoryBasedAnimationHandler extends AnimationHandler {
+public class MemoryBasedFFmpegAnimationHandler extends FFmpegAnimationHandler {
     private final List<CompletableFuture<NativeImage>> frameExportFutures = new ArrayList<>();
 
-    public MemoryBasedAnimationHandler(RenderScreen screen, Renderable<?> renderable, int framesToRender) {
+    public MemoryBasedFFmpegAnimationHandler(RenderScreen screen, Renderable<?> renderable, int framesToRender) {
         super(screen, renderable, framesToRender);
     }
 

@@ -5,9 +5,9 @@ import com.pigicial.wikirenderer.WikiRenderer;
 import com.pigicial.wikirenderer.mixin.access.CameraInvoker;
 import com.pigicial.wikirenderer.property.DefaultPropertyBundle;
 import com.pigicial.wikirenderer.property.GlobalProperties;
-import com.pigicial.wikirenderer.render.CameraOrientationUtil;
+import com.pigicial.wikirenderer.render.CameraUtil;
 import com.pigicial.wikirenderer.render.Renderable;
-import com.pigicial.wikirenderer.render.export.ffmpeg.AnimationHandler;
+import com.pigicial.wikirenderer.render.export.animation.AnimationHandler;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
@@ -47,14 +47,14 @@ public class ParticleRendererAndLooper {
         Minecraft client = Minecraft.getInstance();
         // present in vanilla
 
-        Camera camera = Minecraft.getInstance().getEntityRenderDispatcher().camera;
+        Camera camera = CameraUtil.getCamera();
         if (camera == null) return;
 
         float previousYaw = camera.yRot();
         float previousPitch = camera.xRot();
 
         /* create render state from camera object; (mostly) mirrors GameRenderer.updateCameraState */
-        CameraRenderState cameraRenderState = CameraOrientationUtil.createRenderState(renderable);
+        CameraRenderState cameraRenderState = CameraUtil.createRenderState(renderable);
         cameraRenderState.initialized = true;
         cameraRenderState.pos = camera.position();
         cameraRenderState.blockPos = camera.blockPosition();

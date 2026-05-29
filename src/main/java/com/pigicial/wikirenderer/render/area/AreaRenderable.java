@@ -7,7 +7,7 @@ import com.pigicial.wikirenderer.components.EntityTypeSpecificPropertiesComponen
 import com.pigicial.wikirenderer.mixin.access.ItemStackRenderStateAccessor;
 import com.pigicial.wikirenderer.property.GlobalProperties;
 import com.pigicial.wikirenderer.property.IntProperty;
-import com.pigicial.wikirenderer.render.CameraOrientationUtil;
+import com.pigicial.wikirenderer.render.CameraUtil;
 import com.pigicial.wikirenderer.render.DefaultRenderable;
 import com.pigicial.wikirenderer.render.area.bounds.ChunkScannedMeshBounds;
 import com.pigicial.wikirenderer.render.area.bounds.MeshBounds;
@@ -21,7 +21,7 @@ import com.pigicial.wikirenderer.render.entity.EntityVertexBounds;
 import com.pigicial.wikirenderer.render.entity.options.EntityTypeSpecificOverrides;
 import com.pigicial.wikirenderer.render.export.ExportPathSpec;
 import com.pigicial.wikirenderer.render.export.RenderableDispatcher;
-import com.pigicial.wikirenderer.render.export.ffmpeg.AnimationHandler;
+import com.pigicial.wikirenderer.render.export.animation.AnimationHandler;
 import com.pigicial.wikirenderer.render.item.AnimationTimingsProvider;
 import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
 import com.pigicial.wikirenderer.render.particle.ParticleRendererAndLooper;
@@ -172,7 +172,7 @@ public class AreaRenderable extends DefaultRenderable<AreaPropertyBundle> implem
         double zSize = boundingBox.getZsize();
 
         SubmitNodeStorage nodeStorage = client.gameRenderer.getSubmitNodeStorage();
-        CameraRenderState cameraRenderState = CameraOrientationUtil.createRenderState(this);
+        CameraRenderState cameraRenderState = CameraUtil.createRenderState(this);
 
         standardStack.setIdentity();
         standardStack.translate(-xSize / 2f, -ySize / 2f, -zSize / 2f);
@@ -186,9 +186,12 @@ public class AreaRenderable extends DefaultRenderable<AreaPropertyBundle> implem
             }
 
             if (client.player != null) {
-                Vec3 diff = Vec3.atLowerCornerOf(minCorner).subtract(client.player.trackingPosition());
+                Camera camera = CameraUtil.getCamera();
+                Vec3 cameraPosition = camera != null ? camera.position() : client.player.getEyePosition();
+                Vec3 particleOffset = Vec3.atLowerCornerOf(minCorner).subtract(cameraPosition);
+
                 standardStack.pushPose();
-                standardStack.translate(-diff.x, -diff.y + 1.65, -diff.z);
+                standardStack.translate(-particleOffset.x, -particleOffset.y, -particleOffset.z);
                 ParticleRendererAndLooper.drawParticles(this, standardStack.last().pose(), tickDelta);
                 standardStack.popPose();
             }
@@ -248,7 +251,7 @@ public class AreaRenderable extends DefaultRenderable<AreaPropertyBundle> implem
                 EntityRenderState state = Minecraft.getInstance().getEntityRenderDispatcher().extractEntity(entity, 0);
                 this.updateEntityState(entity, state);
 
-                EntityVertexBounds entityVertexBounds = EntityRenderBoundsUtil.getPositionOffsetBasedBounds(entity, state, CameraOrientationUtil.createRenderState(this));
+                EntityVertexBounds entityVertexBounds = EntityRenderBoundsUtil.getPositionOffsetBasedBounds(entity, state, CameraUtil.createRenderState(this));
                 AABB entityBounds = entityVertexBounds == null ? null : entityVertexBounds.getBounds();
 
                 if (entityBounds != null && entityBounds.intersects(areaBoundingBox)) {
@@ -478,7 +481,7 @@ public class AreaRenderable extends DefaultRenderable<AreaPropertyBundle> implem
             DrawEntityDataCache entityDrawData = drawnVertexBoundCache.get(selectedEntityId);
             if (entityDrawData == null) return;
 
-            CornerData cornerData = EntityRenderBoundsUtil.getDrawnBounds(CameraOrientationUtil.createRenderState(this), entityDrawData, projectionData);
+            CornerData cornerData = EntityRenderBoundsUtil.getDrawnBounds(CameraUtil.createRenderState(this), entityDrawData, projectionData);
             if (cornerData == null) return;
 
             int minX = cornerData.minX() / scale;
@@ -505,7 +508,7 @@ public class AreaRenderable extends DefaultRenderable<AreaPropertyBundle> implem
             Integer entityId = drawnEntities.getKey();
             DrawEntityDataCache entityDrawData = drawnEntities.getValue();
 
-            CornerData bounds = EntityRenderBoundsUtil.getDrawnBounds(CameraOrientationUtil.createRenderState(this), entityDrawData, projectionData);
+            CornerData bounds = EntityRenderBoundsUtil.getDrawnBounds(CameraUtil.createRenderState(this), entityDrawData, projectionData);
             if (bounds != null && bounds.contains((int) x, (int) y)) {
                 int distanceToCenter = bounds.getDistanceToCenterSquared((int) x, (int) y);
                 if (distanceToCenter < lastDistance) {

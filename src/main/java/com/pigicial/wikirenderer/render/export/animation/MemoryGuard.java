@@ -1,4 +1,4 @@
-package com.pigicial.wikirenderer.render.export.ffmpeg;
+package com.pigicial.wikirenderer.render.export.animation;
 
 import com.pigicial.wikirenderer.render.Renderable;
 import com.pigicial.wikirenderer.util.Translate;

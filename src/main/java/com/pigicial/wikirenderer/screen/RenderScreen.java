@@ -20,11 +20,15 @@ import com.pigicial.wikirenderer.render.batch.BatchPropertyBundle;
 import com.pigicial.wikirenderer.render.export.ExportPathSpec;
 import com.pigicial.wikirenderer.render.export.FileIO;
 import com.pigicial.wikirenderer.render.export.RenderableDispatcher;
-import com.pigicial.wikirenderer.render.export.ffmpeg.AnimationHandler;
-import com.pigicial.wikirenderer.render.export.ffmpeg.AnimationHandlingMode;
-import com.pigicial.wikirenderer.render.export.ffmpeg.FFmpegDispatcher;
-import com.pigicial.wikirenderer.render.export.ffmpeg.MemoryGuard;
-import com.pigicial.wikirenderer.render.export.ffmpeg.live.LiveRenderFFmpegAnimationHandler;
+import com.pigicial.wikirenderer.render.export.animation.AnimationHandler;
+import com.pigicial.wikirenderer.render.export.animation.ffmpeg.FFmpegAnimationHandler;
+import com.pigicial.wikirenderer.render.export.animation.ffmpeg.FFmpegAnimationHandlingMode;
+import com.pigicial.wikirenderer.render.export.animation.MemoryGuard;
+import com.pigicial.wikirenderer.render.export.animation.AnimationFormat;
+import com.pigicial.wikirenderer.render.export.animation.ffmpeg.FFmpegDispatcher;
+import com.pigicial.wikirenderer.render.export.animation.ffmpeg.live.LiveRenderFFmpegFFmpegAnimationHandler;
+import com.pigicial.wikirenderer.render.export.animation.gifski.GifskiDispatcher;
+import com.pigicial.wikirenderer.render.export.animation.gifski.MemoryBasedGifskiAnimationHandler;
 import com.pigicial.wikirenderer.render.item.AnimationTimingsProvider;
 import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
 import com.pigicial.wikirenderer.render.particle.ParticleRendererAndLooper;
@@ -262,7 +266,7 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
         this.renderable.getProperties().buildFileNameGUIControls(this.renderable, this, this.rightColumn);
 
         WikiRendererUI.text(rightColumn, "animation_options", true);
-        this.buildFFmpegSection();
+        this.buildAnimationSection();
     }
 
     private void buildDefaultRenderOptionsGUIControls() {
@@ -333,17 +337,39 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
         });
     }
 
-    private void buildFFmpegSection() {
+    private boolean buildGifskiLoadingOrFailedSection() {
+        if (!GifskiDispatcher.wasGifskiCopiedToTempPath()) {
+            WikiRendererUI.text(rightColumn, "copying_gifski", false);
+            GifskiDispatcher.createGifskiTemporaryPath().whenComplete((aBoolean, throwable) -> {
+                this.guiRebuildScheduled = true;
+                if (throwable != null) {
+                    this.minecraft.execute(() -> this.notify(
+                            Translate.gui("no_gifski").withStyle(ChatFormatting.RED),
+                            Component.literal(String.valueOf(throwable.getMessage())).withStyle(ChatFormatting.GRAY)
+                    ));
+                }
+            });
+            return false;
+        }
+
+        if (!GifskiDispatcher.isGifskiAvailable()) {
+            WikiRendererUI.text(rightColumn, "no_gifski", true);
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean buildFFmpegLoadingOrRequirementsSections() {
         if (!FFmpegDispatcher.wasFFmpegDetected()) {
+            WikiRendererUI.text(rightColumn, "detecting_ffmpeg", 5);
             this.buildFFmpegCustomPathSection();
-            WikiRendererUI.text(rightColumn, "detecting_ffmpeg", false);
             this.detectFFmpeg(false);
-            return;
+            return false;
         }
 
         if (!FFmpegDispatcher.ffmpegAvailable()) {
-            this.buildFFmpegCustomPathSection();
-            WikiRendererUI.text(rightColumn, "no_ffmpeg_1", true);
+            WikiRendererUI.text(rightColumn, "no_ffmpeg_1", 5);
             WikiRendererUI.text(rightColumn, "no_ffmpeg_2", false);
             WikiRendererUI.text(rightColumn, "no_ffmpeg_3", false)
                     .cursorStyle(CursorStyle.HAND)
@@ -357,10 +383,62 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
                         }, "https://ffmpeg.org/download.html", true));
                         return true;
                     });
-            return;
+            this.buildFFmpegCustomPathSection();
+            return false;
         }
 
+        return true;
+    }
+
+    private void buildAnimationSection() {
         GlobalProperties globalProperties = GlobalProperties.get();
+        try (WikiRendererUI.RowBuilder builder = WikiRendererUI.autoNewLineRow(rightColumn)) {
+            this.exportAnimationButton = UIComponents.button(Translate.gui("export_animation"), button -> this.queueAnimationExport());
+            builder.row.child(this.exportAnimationButton.margins(Insets.right(5)));
+
+            builder.row.child(UIComponents.button(Translate.gui("format." + globalProperties.animationFormat.extension), button -> {
+                globalProperties.animationFormat = globalProperties.animationFormat.next();
+                button.setMessage(Translate.gui("format." + globalProperties.animationFormat.extension));
+                guiRebuildScheduled = true;
+            }).horizontalSizing(Sizing.fixed(35)));
+        }
+
+        WikiRendererUI.dynamicText(rightColumn, () -> {
+            if (this.currentAnimationExportData == null) {
+                return Component.empty();
+            } else if (this.currentAnimationExportData.getRemainingFrames() > 0) {
+                return Translate.gui("export_remaining_frames", this.currentAnimationExportData.getRemainingFrames());
+            } else if (this.currentAnimationExportData.getCurrentFrame() != null) {
+                String frame = this.currentAnimationExportData.getCurrentFrame();
+                int totalFrames = currentAnimationExportData.getAnimationFrames();
+                if (this.currentAnimationExportData instanceof FFmpegAnimationHandler) {
+                    String exportFps = currentAnimationExportData.getCurrentFFmpegFps();
+                    return Translate.gui("ffmpeg_data", frame, totalFrames, exportFps);
+                } else {
+                    return Translate.gui("gifski_data", frame, totalFrames);
+                }
+            } else {
+                if (this.currentAnimationExportData instanceof LiveRenderFFmpegFFmpegAnimationHandler) {
+                    return Translate.gui("setting_up_second_ffmpeg_pass");
+                } else if (this.currentAnimationExportData instanceof FFmpegAnimationHandler) {
+                    return Translate.gui("setting_up_ffmpeg");
+                } else {
+                    return Translate.gui("setting_up_gifski");
+                }
+            }
+        });
+
+        if (globalProperties.animationFormat == AnimationFormat.GIF) {
+            if (!buildGifskiLoadingOrFailedSection()) {
+                return;
+            }
+            WikiRendererUI.intPercentageControl(this, rightColumn, globalProperties.gifskiQuality, "gifski_quality");
+            WikiRendererUI.booleanControl(rightColumn, globalProperties.saveIndividualFrames, "save_individual_frames");
+        } else {
+            if (!buildFFmpegLoadingOrRequirementsSections()) {
+                return;
+            }
+        }
 
         if (renderable.getProperties() instanceof CroppablePropertyBundle croppablePropertyBundle) {
             Property<Boolean> animatedCropProperty = croppablePropertyBundle.getFFmpegCropProperty();
@@ -403,70 +481,46 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
             }
         });
 
-        try (WikiRendererUI.RowBuilder builder = WikiRendererUI.autoNewLineRow(rightColumn)) {
-            this.exportAnimationButton = UIComponents.button(Translate.gui("export_animation"), _ -> this.queueAnimationExport());
-            builder.row.child(this.exportAnimationButton.margins(Insets.right(5)));
-
-            builder.row.child(UIComponents.button(Translate.gui("format." + globalProperties.animationFormat.extension), button -> {
-                globalProperties.animationFormat = globalProperties.animationFormat.next();
-                button.setMessage(Translate.gui("format." + globalProperties.animationFormat.extension));
-            }).horizontalSizing(Sizing.fixed(35)));
-        }
-
-        WikiRendererUI.dynamicText(rightColumn, () -> {
-            if (this.currentAnimationExportData == null) {
-                return Component.empty();
-            } else if (this.currentAnimationExportData.getRemainingFrames() > 0) {
-                return Translate.gui("export_remaining_frames", this.currentAnimationExportData.getRemainingFrames());
-            } else if (this.currentAnimationExportData.getCurrentFFmpegFrame() != null) {
-                String frame = this.currentAnimationExportData.getCurrentFFmpegFrame();
-                int totalFrames = currentAnimationExportData.getAnimationFrames();
-                String exportFps = currentAnimationExportData.getCurrentFFmpegFps();
-                return Translate.gui("ffmpeg_data", frame, totalFrames, exportFps);
-            } else {
-                if (this.currentAnimationExportData instanceof LiveRenderFFmpegAnimationHandler) {
-                    return Translate.gui("setting_up_second_ffmpeg_pass");
-                } else {
-                    return Translate.gui("setting_up_ffmpeg");
-                }
-            }
-        });
-
         if (renderable instanceof AnimationTimingsProvider timingsProvider) {
             timingsProvider.buildTimingsSection(rightColumn);
         }
 
-        WikiRendererUI.conditionalBooleanControl(rightColumn, globalProperties.saveIndividualFrames, "save_individual_frames", () -> globalProperties.animationHandlingMode.savesFramesToFiles());
-        WikiRendererUI.dynamicText(rightColumn, () -> switch (globalProperties.animationHandlingMode) {
-            case DISK_INSTANT_SAVE -> Translate.gui("animation_mode_selected_instant_file_save");
-            case MEMORY_CACHE -> Translate.gui("animation_mode_selected_save_in_memory");
-            case LIVE_FFMPEG -> Translate.gui("animation_mode_selected_live_ffmpeg");
-        }).margins(Insets.of(10, 0, 5, 0));
+        if (globalProperties.animationFormat != AnimationFormat.GIF) {
+            WikiRendererUI.conditionalBooleanControl(rightColumn, globalProperties.saveIndividualFrames, "save_individual_frames", () -> globalProperties.animationHandlingMode.savesFramesToFiles());
+            WikiRendererUI.dynamicText(rightColumn, () -> switch (globalProperties.animationHandlingMode) {
+                case DISK_INSTANT_SAVE -> Translate.gui("animation_mode_selected_instant_file_save");
+                case MEMORY_CACHE -> Translate.gui("animation_mode_selected_save_in_memory");
+                case LIVE_FFMPEG -> Translate.gui("animation_mode_selected_live_ffmpeg");
+            }).margins(Insets.of(10, 0, 5, 0));
 
-        rightColumn.child(UIComponents.dropdown(Sizing.content())
-                .button(Translate.gui("animation_mode_name_live_ffmpeg"), _ -> globalProperties.animationHandlingMode = AnimationHandlingMode.LIVE_FFMPEG)
-                .text(Translate.gui("animation_mode_description_live_ffmpeg_1"))
-                .text(Translate.gui("animation_mode_description_live_ffmpeg_2"))
-                .button(Translate.gui("animation_mode_name_instant_file_save"), _ -> globalProperties.animationHandlingMode = AnimationHandlingMode.DISK_INSTANT_SAVE)
-                .text(Translate.gui("animation_mode_description_instant_file_save_1"))
-                .text(Translate.gui("animation_mode_description_instant_file_save_2"))
-                .button(Translate.gui("animation_mode_name_save_in_memory"), _ -> globalProperties.animationHandlingMode = AnimationHandlingMode.MEMORY_CACHE)
-                .text(Translate.gui("animation_mode_description_save_in_memory_1"))
-                .text(Translate.gui("animation_mode_description_save_in_memory_2"))
+            rightColumn.child(UIComponents.dropdown(Sizing.content())
+                    .button(Translate.gui("animation_mode_name_live_ffmpeg"), _ -> globalProperties.animationHandlingMode = FFmpegAnimationHandlingMode.LIVE_FFMPEG)
+                    .text(Translate.gui("animation_mode_description_live_ffmpeg_1"))
+                    .text(Translate.gui("animation_mode_description_live_ffmpeg_2"))
+                    .button(Translate.gui("animation_mode_name_instant_file_save"), _ -> globalProperties.animationHandlingMode = FFmpegAnimationHandlingMode.DISK_INSTANT_SAVE)
+                    .text(Translate.gui("animation_mode_description_instant_file_save_1"))
+                    .text(Translate.gui("animation_mode_description_instant_file_save_2"))
+                    .button(Translate.gui("animation_mode_name_save_in_memory"), _ -> globalProperties.animationHandlingMode = FFmpegAnimationHandlingMode.MEMORY_CACHE)
+                    .text(Translate.gui("animation_mode_description_save_in_memory_1"))
+                    .text(Translate.gui("animation_mode_description_save_in_memory_2"))
 
-                .closeWhenNotHovered(false)
-                .padding(Insets.of(5))
-                .surface(Surface.blur(10, 20))
-        );
+                    .closeWhenNotHovered(false)
+                    .padding(Insets.of(5))
+                    .surface(Surface.blur(10, 20))
+            );
 
-        this.buildFFmpegCustomPathSection();
+            this.buildFFmpegCustomPathSection();
+        }
     }
 
     public void queueAnimationExport() {
         GlobalProperties globalProperties = GlobalProperties.get();
-        int framesStoreInMemory = globalProperties.animationHandlingMode.isStoredInMemory() ? globalProperties.exportFrames.get() : 1;
+        int framesStoreInMemory = globalProperties.animationHandlingMode.isStoredInMemory() || globalProperties.animationFormat == AnimationFormat.GIF ? globalProperties.exportFrames.get() : 1;
         if (this.memoryGuard.canFitInRam(memoryGuard.estimateMemoryMBUsage(renderable, framesStoreInMemory)) || this.minecraft.hasControlDown()) {
-            this.currentAnimationExportData = globalProperties.animationHandlingMode.createAnimationHandler(this, renderable);
+            this.currentAnimationExportData = globalProperties.animationFormat == AnimationFormat.GIF
+                    ? new MemoryBasedGifskiAnimationHandler(this, renderable, GlobalProperties.get().exportFrames.get())
+                    : globalProperties.animationHandlingMode.createAnimationHandler(this, renderable);
+
             WikiRenderer.currentAnimationHandler = this.currentAnimationExportData;
 
             if (globalProperties.setAnimationFpsCap.get()) {
@@ -540,7 +594,7 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
             drawGuiBackground(graphics);
 
             if (this.exportAnimationButton != null) {
-                int framesStoreInMemory = globalProperties.animationHandlingMode.isStoredInMemory() ? globalProperties.exportFrames.get() : 1;
+                int framesStoreInMemory = globalProperties.animationHandlingMode.isStoredInMemory() || globalProperties.animationFormat == AnimationFormat.GIF ? globalProperties.exportFrames.get() : 1;
                 int memoryMB = memoryGuard.estimateMemoryMBUsage(renderable, framesStoreInMemory);
                 List<ClientTooltipComponent> tooltip = this.memoryGuard.getStatusTooltip(memoryMB)
                         .stream()
@@ -575,14 +629,14 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
         ExportPathSpec exportPath = customFileName == null || customFileName.isBlank() ? defaultExportPath : defaultExportPath.differentFileName(customFileName);
 
         String areaRunCommandIfPossible;
-        AtomicReference<MinimapCalibratorData> data = new AtomicReference<>();
+        AtomicReference<MinimapCalibratorData> minimapCalibratorData = new AtomicReference<>();
         Consumer<MinimapCalibratorData> dataConsumer = null;
         if (renderable instanceof AreaRenderable areaRenderable
             && areaRenderable.getProperties().perPixel90DegreeRendering.get()
             && areaRenderable.getProperties().exportSideViewMinimapData.get()
             && areaRenderable.getProperties().areMinimapSettingsExportable()) {
 
-            dataConsumer = data::set;
+            dataConsumer = minimapCalibratorData::set;
             areaRunCommandIfPossible = areaRenderable.mesh.bounds.generateAreaCommand();
         } else {
             areaRunCommandIfPossible = null;
@@ -609,8 +663,8 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
                         ));
                     }
 
-                    if (data.get() != null) {
-                        String fileText = data.get().toFileText(imageFile.getName(), areaRunCommandIfPossible);
+                    if (minimapCalibratorData.get() != null) {
+                        String fileText = minimapCalibratorData.get().toFileText(imageFile.getName(), areaRunCommandIfPossible);
                         ExportPathSpec minimapExportPath = customFileName == null || customFileName.isBlank()
                                 ? defaultExportPath.differentFileName("area_render_minimap_data")
                                 : defaultExportPath.differentFileName(customFileName + "_area_render_minimap_data");

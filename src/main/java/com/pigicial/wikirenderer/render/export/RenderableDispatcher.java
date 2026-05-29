@@ -161,7 +161,7 @@ public class RenderableDispatcher {
         if (crop) {
             // resize image to target height by regenerating it with an increased size
             image = image.thenApply(uncropped -> {
-                ImageCropper.CropData cropData = ImageCropper.getCropData(uncropped);
+                CropData cropData = ImageCropper.getCropData(uncropped);
                 NativeImage cropped = ImageCropper.cropTransparentAndCloseSource(uncropped, cropData);
                 // uncropped no longer valid by this point
 

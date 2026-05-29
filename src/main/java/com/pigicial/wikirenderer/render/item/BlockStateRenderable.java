@@ -5,7 +5,7 @@ import com.pigicial.wikirenderer.WikiRenderer;
 import com.pigicial.wikirenderer.mixin.access.BlockEntityAccessor;
 import com.pigicial.wikirenderer.mixin.access.MinecraftAccessor;
 import com.pigicial.wikirenderer.property.GlobalProperties;
-import com.pigicial.wikirenderer.render.CameraOrientationUtil;
+import com.pigicial.wikirenderer.render.CameraUtil;
 import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
 import com.pigicial.wikirenderer.render.TickingRenderable;
 import com.pigicial.wikirenderer.render.batch.DynamicBatchLabelProvider;
@@ -131,8 +131,8 @@ public class BlockStateRenderable
         // renders the extra stuff, like the book on the enchantment table, middle bell within the bell block, etc
         BlockEntityRenderState renderState = this.blockEntity == null ? null : this.client.getBlockEntityRenderDispatcher().tryExtractRenderState(blockEntity, tickDelta, null);
         if (renderState != null) {
-            renderState.lightCoords = LightCoordsUtil.FULL_BRIGHT;
-            this.client.getBlockEntityRenderDispatcher().submit(renderState, matrices, this.client.gameRenderer.getSubmitNodeStorage(), CameraOrientationUtil.createRenderState(this));
+            renderState.lightCoords = LightTexture.FULL_BRIGHT;
+            this.client.getBlockEntityRenderDispatcher().submit(renderState, matrices, this.client.gameRenderer.getSubmitNodeStorage(), CameraUtil.createRenderState(this));
         }
 
         super.drawSubmittedRenderFeatures();

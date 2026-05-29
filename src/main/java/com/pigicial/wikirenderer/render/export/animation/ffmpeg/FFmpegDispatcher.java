@@ -1,7 +1,9 @@
-package com.pigicial.wikirenderer.render.export.ffmpeg;
+package com.pigicial.wikirenderer.render.export.animation.ffmpeg;
 
 import com.pigicial.wikirenderer.WikiRenderer;
 import com.pigicial.wikirenderer.property.GlobalProperties;
+import com.pigicial.wikirenderer.render.export.animation.AnimationFormat;
+import com.pigicial.wikirenderer.render.export.animation.AnimationHandler;
 import com.pigicial.wikirenderer.render.export.ExportPathSpec;
 import com.pigicial.wikirenderer.render.export.FileIO;
 import net.minecraft.util.Util;
@@ -22,7 +24,7 @@ public class FFmpegDispatcher {
     public static String resolvedFFmpegPath = null;
     public static Boolean ffmpegDetected = null;
     public static boolean tryCustomPathAgain = false;
-    public static CustomPathState customPathState = CustomPathState.NOT_CHECKED;
+    public static CustomFFmpegPathState customPathState = CustomFFmpegPathState.NOT_CHECKED;
     public static boolean activelyCheckingFfmpeg = false;
 
     public static boolean wasFFmpegDetected() {
@@ -53,8 +55,8 @@ public class FFmpegDispatcher {
                 process.onExit().join();
                 String output = new String(process.getInputStream().readAllBytes());
 
-                if (customPathState == CustomPathState.CHECKING) {
-                    customPathState = CustomPathState.FOUND;
+                if (customPathState == CustomFFmpegPathState.CHECKING) {
+                    customPathState = CustomFFmpegPathState.FOUND;
                 }
 
                 WikiRenderer.LOGGER.info("FFmpeg detected at {}, version: {}", path, output.split(" ")[2]);
@@ -62,8 +64,8 @@ public class FFmpegDispatcher {
                 return true;
             } catch (Exception exception) {
                 WikiRenderer.LOGGER.info("Did not detect FFmpeg for reason: {}", exception.getMessage());
-                if (customPathState == CustomPathState.CHECKING) {
-                    customPathState = CustomPathState.NOT_FOUND;
+                if (customPathState == CustomFFmpegPathState.CHECKING) {
+                    customPathState = CustomFFmpegPathState.NOT_FOUND;
                 }
                 return false;
             }
@@ -76,12 +78,12 @@ public class FFmpegDispatcher {
     public static String findFFmpegPath() {
         GlobalProperties globalProperties = GlobalProperties.get();
         if (globalProperties.useCustomFFmpegPath.get()) {
-            customPathState = CustomPathState.CHECKING;
+            customPathState = CustomFFmpegPathState.CHECKING;
             File file = new File(globalProperties.customFFmpegPath);
             return file.getAbsolutePath();
         }
 
-        customPathState = CustomPathState.NOT_CHECKED;
+        customPathState = CustomFFmpegPathState.NOT_CHECKED;
         String os = System.getProperty("os.name").toLowerCase();
         String binName = os.contains("win") ? "ffmpeg.exe" : "ffmpeg";
 
@@ -117,7 +119,7 @@ public class FFmpegDispatcher {
         return resolvedFFmpegPath == null ? "ffmpeg" : resolvedFFmpegPath;
     }
 
-    public static CompletableFuture<File> exportAnimation(ExportPathSpec target, Path sourcePath, Format format, AnimationHandler handler, @Nullable String cropFilter) {
+    public static CompletableFuture<File> exportAnimation(ExportPathSpec target, Path sourcePath, AnimationFormat format, AnimationHandler handler, @Nullable String cropFilter) {
         target.resolveOffset().toFile().mkdirs();
 
         String ffmpegPath = FFmpegDispatcher.getResolvedOrFallbackFFmpegPath();
@@ -132,7 +134,7 @@ public class FFmpegDispatcher {
         }));
 
         boolean hasCrop = cropFilter != null && !cropFilter.isBlank();
-        if (format == Format.GIF) {
+        if (format == AnimationFormat.GIF) {
             args.add("-filter_complex");
             String chain1 = "format=rgba,split[split1][split2];[split1]drawbox=c=white@0.2:t=fill[bg];[bg][split2]overlay,";
             String chain2 = hasCrop ? "[0:v]" + cropFilter + "," + chain1 + "split[v1][v2];" : "[0:v]" + chain1 + "split[v1][v2];";
@@ -143,8 +145,8 @@ public class FFmpegDispatcher {
             args.add(cropFilter);
         }
 
-        if (format.arguments.length != 0) {
-            args.addAll(Arrays.asList(format.arguments));
+        if (format.ffmpegArguments.length != 0) {
+            args.addAll(Arrays.asList(format.ffmpegArguments));
         }
 
         File animationFile = target.resolveFile(format.extension);
@@ -183,7 +185,7 @@ public class FFmpegDispatcher {
             try {
                 String frame = extractValue(line, "frame=");
                 String fps = extractValue(line, "fps=");
-                handler.setFFmpegData(frame, fps);
+                handler.setProgressData(frame, fps);
 
             } catch (Exception ignored) {
                 // FFmpeg lines can be messy, ignore malformed status updates
@@ -196,32 +198,6 @@ public class FFmpegDispatcher {
         String sub = line.substring(start).trim();
         int end = sub.indexOf(" ");
         return end != -1 ? sub.substring(0, end) : sub;
-    }
-
-    public enum Format {
-        APNG("apng", new String[]{"-plays", "0", "-pix_fmt", "rgba"}),
-	    WEBP("webp", new String[]{"-plays", "0", "-loop", "0", "-pix_fmt", "rgba"}),
-        GIF("gif", new String[]{"-plays", "0"}),
-        MP4("mp4", new String[]{"-preset", "slow", "-crf", "20", "-pix_fmt", "yuv420p"}),
-        MOV("mov", new String[]{"-c:v", "prores_ks", "-profile:v", "4444", "-q:v", "1", "-pix_fmt", "yuva444p10le"});
-
-        public final String extension;
-        public final String[] arguments;
-
-        Format(String extension, String[] arguments) {
-            this.extension = extension;
-            this.arguments = arguments;
-        }
-
-        public Format next() {
-            return switch (this) {
-                case MP4 -> MOV;
-                case MOV -> APNG;
-                case APNG -> WEBP;
-	            case WEBP -> GIF;
-                case GIF -> MP4;
-            };
-        }
     }
 
 }

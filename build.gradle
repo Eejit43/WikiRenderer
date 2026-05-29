@@ -1,4 +1,15 @@
-//file:noinspection GradlePackageVersionRange
+import org.tukaani.xz.XZInputStream
+import java.security.MessageDigest
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.tukaani:xz:1.9'
+    }
+}
+
 plugins {
     id 'net.fabricmc.fabric-loom' version '1.15-SNAPSHOT'
     id 'maven-publish'
@@ -30,7 +41,6 @@ loom {
 }
 
 dependencies {
-    //to change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
@@ -44,6 +54,90 @@ dependencies {
     compileOnly "maven.modrinth:entityculling:${project.entity_culling_version}"
 }
 
+def gifskiVersion = project.gifski_version
+def gifskiHash = project.gifski_hash
+def generatedResourcesDir = layout.buildDirectory.dir("generated/gifski-resources").get().asFile
+def gifskiTargetDir = file("${generatedResourcesDir}/assets/wikirenderer/gifski")
+
+sourceSets {
+    main {
+        resources {
+            srcDir generatedResourcesDir
+        }
+    }
+}
+
+tasks.register('downloadLatestGifski') {
+    group = 'build setup'
+    description = "Downloads the official Gifski v${gifskiVersion} .tar.xz package, verifies SHA-256, and extracts binaries."
+
+    inputs.property("version", gifskiVersion)
+    inputs.property("sha256", gifskiHash)
+    outputs.dir(gifskiTargetDir)
+
+    doLast {
+        def downloadUrl = "https://github.com/ImageOptim/gifski/releases/download/${gifskiVersion}/gifski-${gifskiVersion}.tar.xz"
+
+        def tempDir = layout.buildDirectory.dir("tmp/gifski").get().asFile
+        tempDir.mkdirs()
+
+        def archiveFile = file("${tempDir}/gifski-${gifskiVersion}.tar.xz")
+        def unxzTarFile = file("${tempDir}/gifski-${gifskiVersion}.tar")
+
+        println "Downloading Gifski built from GitHub: gifski-${gifskiVersion}.tar.xz"
+        archiveFile.withOutputStream { out ->
+            def urlConn = new URL(downloadUrl).openConnection()
+            urlConn.setRequestProperty("User-Agent", "Gradle-Build-Script")
+            out << urlConn.inputStream
+        }
+
+        println "Verifying Gifski SHA-256 checksum"
+        def digest = MessageDigest.getInstance("SHA-256")
+        archiveFile.eachByte(8192) { buffer, bytesRead ->
+            digest.update(buffer, 0, bytesRead)
+        }
+        def actualSha256 = digest.digest().encodeHex().toString()
+
+        if (!actualSha256.equalsIgnoreCase(gifskiHash)) {
+            throw new GradleException(
+                    "SHA-256 verification failed for Gifski distribution :(\n" +
+                            "Expected: ${gifskiHash}\n" +
+                            "Actual:   ${actualSha256}"
+            )
+        }
+        println "Gifski SHA-256 Checksum verified successfully!"
+
+        println "Decompressing Gifski XZ layer to TAR"
+        unxzTarFile.withOutputStream { out ->
+            archiveFile.withInputStream { is ->
+                out << new XZInputStream(is)
+            }
+        }
+
+        println "Extracting Gifski platform binaries"
+        copy {
+            from tarTree(unxzTarFile)
+            into gifskiTargetDir
+
+            include "**/linux/**"
+            include "**/mac/**"
+            include "**/win/**"
+            include "**/LICENSE"
+
+            eachFile { fcp ->
+                def segments = fcp.relativePath.segments
+                if (segments.length > 1 && segments[0].startsWith("gifski-")) {
+                    fcp.relativePath = new RelativePath(true, segments.drop(1) as String[])
+                }
+            }
+            includeEmptyDirs = false
+        }
+
+        unxzTarFile.delete()
+        println "Binaries successfully placed in assets layout."
+    }
+}
+
 processResources {
     inputs.property "version", project.version
 
@@ -52,6 +146,11 @@ processResources {
     }
 
     exclude "assets/wikirenderer/readme_images/**"
+}
+
+processResources.dependsOn downloadLatestGifski
+tasks.withType(Jar).configureEach {
+    dependsOn downloadLatestGifski
 }
 
 tasks.withType(JavaCompile).configureEach {

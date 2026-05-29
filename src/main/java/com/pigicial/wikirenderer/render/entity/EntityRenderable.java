@@ -7,7 +7,7 @@ import com.pigicial.wikirenderer.components.EntityTypeSpecificPropertiesComponen
 import com.pigicial.wikirenderer.mixin.access.ClientMannequinAccessor;
 import com.pigicial.wikirenderer.mixin.access.ItemStackRenderStateAccessor;
 import com.pigicial.wikirenderer.mixin.access.MannequinAccessor;
-import com.pigicial.wikirenderer.render.CameraOrientationUtil;
+import com.pigicial.wikirenderer.render.CameraUtil;
 import com.pigicial.wikirenderer.render.DefaultRenderable;
 import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
 import com.pigicial.wikirenderer.render.batch.DynamicBatchLabelProvider;
@@ -22,6 +22,7 @@ import com.pigicial.wikirenderer.textures.PlayerTextureUtils;
 import com.pigicial.wikirenderer.textures.TextureData;
 import com.pigicial.wikirenderer.textures.TextureDataProvider;
 import com.pigicial.wikirenderer.util.*;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.ClientMannequin;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -179,7 +180,7 @@ public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> im
             Entity usedEntity = getUsedEntity();
             EntityRenderState mainEntityRenderState = Minecraft.getInstance().getEntityRenderDispatcher().extractEntity(usedEntity, 0);
             this.updateRenderState(usedEntity, mainEntityRenderState, properties, timeSinceCreationMs, isUsingLiveEntity());
-            EntityVertexBounds mainEntityVertexBounds = EntityRenderBoundsUtil.getPositionOffsetBasedBounds(usedEntity, mainEntityRenderState, CameraOrientationUtil.createRenderState(this));
+            EntityVertexBounds mainEntityVertexBounds = EntityRenderBoundsUtil.getPositionOffsetBasedBounds(usedEntity, mainEntityRenderState, CameraUtil.createRenderState(this));
 
             AABB mainEntityBounds = mainEntityVertexBounds != null ? mainEntityVertexBounds.getBounds() : usedEntity.getBoundingBox();
             double distance = properties.surroundingEntitiesRadius.get();
@@ -196,7 +197,7 @@ public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> im
                 EntityRenderState state = Minecraft.getInstance().getEntityRenderDispatcher().extractEntity(entity, 0);
                 this.updateRenderState(entity, state, properties, timeSinceCreationMs, true);
 
-                EntityVertexBounds entityVertexBounds = EntityRenderBoundsUtil.getPositionOffsetBasedBounds(entity, state, CameraOrientationUtil.createRenderState(this));
+                EntityVertexBounds entityVertexBounds = EntityRenderBoundsUtil.getPositionOffsetBasedBounds(entity, state, CameraUtil.createRenderState(this));
                 AABB entityBounds = entityVertexBounds == null ? null : entityVertexBounds.getBounds();
 
                 return entityBounds != null && entityBounds.intersects(area);
@@ -282,7 +283,7 @@ public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> im
                 }
             }
 
-            EntityVertexBounds vertexBounds = EntityRenderBoundsUtil.getBounds(state, CameraOrientationUtil.createRenderState(this), 0, 0, 0);
+            EntityVertexBounds vertexBounds = EntityRenderBoundsUtil.getBounds(state, CameraUtil.createRenderState(this), 0, 0, 0);
 
             if (cachedCenterOffset == null || cachedScaleMultiplier == null) {
                 AABB regularBounds = entity.getBoundingBox();
@@ -310,7 +311,7 @@ public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> im
 
             WikiRenderer.animationTimingDataRequestedToFill = animationTimingsToFill;
 
-            renderDispatcher.submit(state, CameraOrientationUtil.createRenderState(this), offset.x(), offset.y(), offset.z(), matrices, nodeStorage);
+            renderDispatcher.submit(state, CameraUtil.createRenderState(this), offset.x(), offset.y(), offset.z(), matrices, nodeStorage);
             this.drawSubmittedRenderFeatures();
 
             matrices.popPose();
@@ -326,12 +327,16 @@ public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> im
         if (this.client.player != null && liveNonTickableEntity != null) {
             matrices.pushPose();
 
-            Vec3 playerDifference = getUsedEntity().position().subtract(client.player.getEyePosition());
+            Camera camera = CameraUtil.getCamera();
+            Vec3 cameraPosition = camera != null ? camera.position() : client.player.getEyePosition();
+            Vec3 entityPosition = CameraUtil.getEntityPositionForParticles(usedEntity, tickDelta);
+
+            Vec3 cameraDifference = entityPosition.subtract(cameraPosition);
             if (cachedScaleMultiplier != null) {
                 matrices.scale(cachedScaleMultiplier, cachedScaleMultiplier, cachedScaleMultiplier);
                 matrices.translate(cachedCenterOffset); // this fits it into the default frame
             }
-            matrices.translate(-playerDifference.x, -playerDifference.y, -playerDifference.z);
+            matrices.translate(-cameraDifference.x, -cameraDifference.y, -cameraDifference.z);
 
             ParticleRendererAndLooper.drawParticles(this, matrices.last().pose(), delta);
             matrices.popPose();
@@ -490,7 +495,7 @@ public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> im
             EntityRenderState mainEntityRenderState = Minecraft.getInstance().getEntityRenderDispatcher().extractEntity(usedEntity, 0);
 
             this.updateRenderState(usedEntity, mainEntityRenderState, getProperties(), 0, isUsingLiveEntity());
-            EntityVertexBounds mainEntityVertexBounds = EntityRenderBoundsUtil.getPositionOffsetBasedBounds(usedEntity, mainEntityRenderState, CameraOrientationUtil.createRenderState(this));
+            EntityVertexBounds mainEntityVertexBounds = EntityRenderBoundsUtil.getPositionOffsetBasedBounds(usedEntity, mainEntityRenderState, CameraUtil.createRenderState(this));
 
             AABB mainEntityBounds = mainEntityVertexBounds != null ? mainEntityVertexBounds.getBounds() : usedEntity.getBoundingBox();
             double distance = getProperties().surroundingParticlesRadius.get();
@@ -694,7 +699,7 @@ public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> im
             DrawEntityDataCache entityDrawData = drawnVertexBoundCache.get(selectedEntityId);
             if (entityDrawData == null) return;
 
-            CornerData cornerData = EntityRenderBoundsUtil.getDrawnBounds(CameraOrientationUtil.createRenderState(this), entityDrawData, projectionData);
+            CornerData cornerData = EntityRenderBoundsUtil.getDrawnBounds(CameraUtil.createRenderState(this), entityDrawData, projectionData);
             if (cornerData == null) return;
 
             int minX = cornerData.minX() / scale;
@@ -721,7 +726,7 @@ public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> im
             int entityId = drawnEntities.getKey();
             DrawEntityDataCache entityDrawData = drawnEntities.getValue();
 
-            CornerData bounds = EntityRenderBoundsUtil.getDrawnBounds(CameraOrientationUtil.createRenderState(this), entityDrawData, projectionData);
+            CornerData bounds = EntityRenderBoundsUtil.getDrawnBounds(CameraUtil.createRenderState(this), entityDrawData, projectionData);
             if (bounds != null && bounds.contains((int) x, (int) y)) {
                 int distanceToCenter = bounds.getDistanceToCenterSquared((int) x, (int) y);
                 if (distanceToCenter < lastDistance) {

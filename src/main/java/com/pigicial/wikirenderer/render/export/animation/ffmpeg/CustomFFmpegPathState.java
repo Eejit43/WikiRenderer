@@ -1,8 +1,8 @@
-package com.pigicial.wikirenderer.render.export.ffmpeg;
+package com.pigicial.wikirenderer.render.export.animation.ffmpeg;
 
 import net.minecraft.ChatFormatting;
 
-public enum CustomPathState {
+public enum CustomFFmpegPathState {
     NOT_CHECKED(ChatFormatting.GRAY),
     CHECKING(ChatFormatting.YELLOW),
     FOUND(ChatFormatting.GREEN),
@@ -10,7 +10,7 @@ public enum CustomPathState {
 
     private final ChatFormatting color;
 
-    CustomPathState(ChatFormatting color) {
+    CustomFFmpegPathState(ChatFormatting color) {
         this.color = color;
     }
 

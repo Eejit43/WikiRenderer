@@ -1,4 +1,4 @@
-package com.pigicial.wikirenderer.render.export.ffmpeg.live;
+package com.pigicial.wikirenderer.render.export.animation.ffmpeg.live;
 
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.pigicial.wikirenderer.WikiRenderer;
@@ -7,8 +7,9 @@ import com.pigicial.wikirenderer.render.Renderable;
 import com.pigicial.wikirenderer.render.export.ExportPathSpec;
 import com.pigicial.wikirenderer.render.export.ImageCropper;
 import com.pigicial.wikirenderer.render.export.RenderableDispatcher;
-import com.pigicial.wikirenderer.render.export.ffmpeg.AnimationHandler;
-import com.pigicial.wikirenderer.render.export.ffmpeg.FFmpegDispatcher;
+import com.pigicial.wikirenderer.render.export.animation.AnimationFormat;
+import com.pigicial.wikirenderer.render.export.animation.ffmpeg.FFmpegAnimationHandler;
+import com.pigicial.wikirenderer.render.export.animation.ffmpeg.FFmpegDispatcher;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.Nullable;
@@ -23,13 +24,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public final class LiveRenderFFmpegAnimationHandler extends AnimationHandler {
+public final class LiveRenderFFmpegFFmpegAnimationHandler extends FFmpegAnimationHandler {
 
     private final FFmpegSession session;
     private final List<CompletableFuture<Void>> frameFileExportFutures = new ArrayList<>();
     private final Path tempData;
 
-    public LiveRenderFFmpegAnimationHandler(RenderScreen screen, Renderable<?> renderable, int framesToRender) {
+    public LiveRenderFFmpegFFmpegAnimationHandler(RenderScreen screen, Renderable<?> renderable, int framesToRender) {
         super(screen, renderable, framesToRender);
         try {
             Path rendersFolder = ExportPathSpec.exportRoot();
@@ -85,7 +86,7 @@ public final class LiveRenderFFmpegAnimationHandler extends AnimationHandler {
         }
     }
 
-    private void exportFinalFromMaster(FFmpegDispatcher.Format format, String cropFilter) {
+    private void exportFinalFromMaster(AnimationFormat format, String cropFilter) {
         ExportPathSpec defaultExportPath = this.renderable.getExportPath();
         ExportPathSpec exportPath = defaultExportPath.differentFileName(renderable.getCustomFileName());
 
@@ -103,7 +104,7 @@ public final class LiveRenderFFmpegAnimationHandler extends AnimationHandler {
 
         boolean hasCrop = cropFilter != null && !cropFilter.isBlank();
 
-        if (format == FFmpegDispatcher.Format.GIF) {
+        if (format == AnimationFormat.GIF) {
             args.add("-filter_complex");
             String cropNode = hasCrop ? "[0:v]" + cropFilter + "[cropped];[cropped]" : "[0:v]";
             String chain = cropNode + "format=rgba,split[split1][split2];" +
@@ -119,8 +120,8 @@ public final class LiveRenderFFmpegAnimationHandler extends AnimationHandler {
             args.add(cropFilter);
         }
 
-        if (format.arguments.length != 0) {
-            args.addAll(Arrays.asList(format.arguments));
+        if (format.ffmpegArguments.length != 0) {
+            args.addAll(Arrays.asList(format.ffmpegArguments));
         }
 
         args.add(animationFile.getAbsolutePath());
@@ -150,12 +151,12 @@ public final class LiveRenderFFmpegAnimationHandler extends AnimationHandler {
             } catch (Exception e) {
                 throw new RuntimeException("FFmpeg export failed", e);
             }
-        }).whenComplete((f, animationThrowable) -> this.finishAndCleanup(f, null));
+        }).whenComplete((f, animationThrowable) -> this.finishAndCleanup(f, animationThrowable, null));
     }
 
     @Override
-    protected void finishAndCleanup(File animationFile, @Nullable Path framesFolderToLinkTo) {
-        super.finishAndCleanup(animationFile, framesFolderToLinkTo);
+    protected void finishAndCleanup(@Nullable File animationFile, @Nullable Throwable error, @Nullable Path framesFolderToLinkTo) {
+        super.finishAndCleanup(animationFile, error, framesFolderToLinkTo);
         try {
             this.session.close();
         } catch (Exception e) {

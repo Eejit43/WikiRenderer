@@ -18,10 +18,10 @@ public class ImageCropper {
             return source;
         }
 
-        int croppedWidth = cropData.maxX - cropData.minX + 1;
-        int croppedHeight = cropData.maxY - cropData.minY + 1;
+        int croppedWidth = cropData.maxX() - cropData.minX() + 1;
+        int croppedHeight = cropData.maxY() - cropData.minY() + 1;
         NativeImage cropped = new NativeImage(source.format(), croppedWidth, croppedHeight, false);
-        source.copyRect(cropped, cropData.minX, cropData.minY, 0, 0, croppedWidth, croppedHeight, false, false);
+        source.copyRect(cropped, cropData.minX(), cropData.minY(), 0, 0, croppedWidth, croppedHeight, false, false);
         source.close();
         return cropped;
     }
@@ -54,6 +54,19 @@ public class ImageCropper {
         return new CropData(minX, maxX, minY, maxY);
     }
 
+    @Nullable
+    public static CropData combineCropDataIfNecessary(Renderable<?> renderable, List<CropData> dataList) {
+        if (!renderable.shouldCropForFFmpeg() || dataList.isEmpty()) {
+            return null;
+        }
+
+        int minX = dataList.stream().mapToInt(CropData::minX).min().orElseThrow();
+        int maxX = dataList.stream().mapToInt(CropData::maxX).max().orElseThrow();
+        int minY = dataList.stream().mapToInt(CropData::minY).min().orElseThrow();
+        int maxY = dataList.stream().mapToInt(CropData::maxY).max().orElseThrow();
+        return new CropData(minX, maxX, minY, maxY);
+    }
+
     public static String getFFmpegCropSize(Renderable<?> renderable, List<CropData> dataList) {
         dataList.removeIf(Objects::isNull);
         if (!renderable.shouldCropForFFmpeg() || dataList.isEmpty()) {
@@ -76,7 +89,5 @@ public class ImageCropper {
         // fFmpeg syntax: crop=w:h:x:y
         return "crop="+ width + ":" + height + ":" + offsetFromLeft + ":" + offsetFromTop;
     }
-
-    public record CropData(int minX, int maxX, int minY, int maxY) {}
 
 }

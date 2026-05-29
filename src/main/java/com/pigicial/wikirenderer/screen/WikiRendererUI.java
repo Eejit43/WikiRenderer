@@ -125,7 +125,7 @@ public class WikiRendererUI {
     public static void dynamicConditionalText(FlowLayout container, Supplier<Boolean> predicate, Supplier<Component> content) {
         DynamicLabelComponent label = new DynamicLabelComponent(content);
         label.shadow(false);
-        label.margins(Insets.bottom(5));
+        label.margins(Insets.vertical(5));
 
         container.child(new DynamicComponent(label, predicate));
     }
@@ -147,7 +147,7 @@ public class WikiRendererUI {
 
     public static FlowLayout row() {
         FlowLayout layout = UIContainers.horizontalFlow(Sizing.fill(100), Sizing.content());
-        layout.margins(Insets.of(5, 5, 0, 0)).verticalAlignment(VerticalAlignment.CENTER);
+        layout.margins(Insets.of(3, 3, 0, 0)).verticalAlignment(VerticalAlignment.CENTER);
         return layout;
     }
 
