@@ -237,7 +237,6 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
 
     @Override
     protected void build(FlowLayout rootComponent) {
-        this.minecraft.options.setCameraType(CameraType.FIRST_PERSON);
         WikiRenderer.particleDisplayCondition = this.renderable.getParticleDisplayCondition();
 
         this.leftColumn.margins(Insets.top(20));
