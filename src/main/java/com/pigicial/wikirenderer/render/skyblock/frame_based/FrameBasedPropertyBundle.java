@@ -7,7 +7,6 @@ import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.screen.WikiRendererUI;
 import com.pigicial.wikirenderer.util.Translate;
 import io.wispforest.owo.ui.component.ButtonComponent;
-import io.wispforest.owo.ui.component.UIComponents;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.Insets;
 import io.wispforest.owo.ui.core.Sizing;
@@ -62,6 +61,15 @@ public class FrameBasedPropertyBundle<S, R extends Renderable<P>, P extends Prop
             delegate.modifyRotation(amount);
         } else {
             super.modifySlant(amount);
+        }
+    }
+
+    @Override
+    public void modifyScale(double amount) {
+        if (this.actualProperties instanceof DefaultPropertyBundle delegate) {
+            delegate.modifyScale(amount);
+        } else {
+            super.modifyScale(amount);
         }
     }
 
@@ -127,25 +135,25 @@ public class FrameBasedPropertyBundle<S, R extends Renderable<P>, P extends Prop
 
         if (!GraphicsEnvironment.isHeadless()) {
             try (WikiRendererUI.RowBuilder builder = WikiRendererUI.autoNewLineRow(container)) {
-                ButtonComponent copyAnimationDataButton = UIComponents.button(Translate.gui("copy_animation_data"), _ -> {
+                ButtonComponent copyAnimationDataButton = WikiRendererUI.button(Translate.gui("copy_animation_data"), _ -> {
                     screen.notify(Translate.gui("copied_animation_data_to_clipboard"));
 
                     String text = String.join("\n", frameBasedRenderable.generateWikiTextFile(frameBasedRenderable.currentDataSet));
                     Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), (_, _) -> {
                     });
                 });
-                copyAnimationDataButton.margins(Insets.bottom(5));
+                copyAnimationDataButton.margins(Insets.bottom(3));
                 builder.row.child(copyAnimationDataButton);
 
                 if (renderable instanceof ItemFrameBasedRenderable itemFrameBasedRenderable) {
-                    ButtonComponent copyProfilesButton = UIComponents.button(Translate.gui("copy_profile_data"), _ -> {
+                    ButtonComponent copyProfilesButton = WikiRendererUI.button(Translate.gui("copy_profile_data"), _ -> {
                         screen.notify(Translate.gui("copied_profile_data_to_clipboard"));
 
                         String text = String.join("\n", itemFrameBasedRenderable.generateProfileJson());
                         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), (_, _) -> {
                         });
                     });
-                    copyProfilesButton.margins(Insets.bottom(5));
+                    copyProfilesButton.margins(Insets.bottom(9));
                     builder.row.child(copyProfilesButton);
                 }
             }

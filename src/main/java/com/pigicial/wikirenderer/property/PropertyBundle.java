@@ -5,6 +5,7 @@ import com.pigicial.wikirenderer.WikiRenderer;
 import com.pigicial.wikirenderer.mixin.access.NativeImageInvoker;
 import com.pigicial.wikirenderer.render.Renderable;
 import com.pigicial.wikirenderer.render.export.RenderableDispatcher;
+import com.pigicial.wikirenderer.render.particle.ParticleRendererAndLooper;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.screen.WikiRendererUI;
 import com.pigicial.wikirenderer.util.ImageTransferable;
@@ -13,6 +14,7 @@ import io.wispforest.owo.ui.component.TextBoxComponent;
 import io.wispforest.owo.ui.component.UIComponents;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.Sizing;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Util;
 import org.joml.Matrix4fStack;
@@ -34,6 +36,24 @@ public interface PropertyBundle {
 
     default void buildRenderOptionGUIControls(Renderable<?> renderable, RenderScreen screen, FlowLayout container) {
 
+    }
+
+    default void buildLoopParticlesOption(FlowLayout container) {
+        GlobalProperties globalProperties = GlobalProperties.get();
+
+        WikiRendererUI.conditionalBooleanControl(container, globalProperties.loopParticles, "loop_particles",
+                () -> globalProperties.tickParticles.get() && globalProperties.setAnimationFpsCap.get() && globalProperties.exportFramerate.get() == 20);
+
+        WikiRendererUI.dynamicConditionalText(container, () -> globalProperties.tickParticles.get() && globalProperties.loopParticles.get() && globalProperties.setAnimationFpsCap.get() && globalProperties.exportFramerate.get() == 20, () -> {
+            int existingTotal = ParticleRendererAndLooper.getAtLeastPartiallySavedParticleCount();
+            int fullySavedTotal = ParticleRendererAndLooper.getFullySavedParticleCount();
+            if (existingTotal == fullySavedTotal) {
+                return Translate.gui("loop_particles_ready").withStyle(ChatFormatting.GREEN);
+            } else {
+                int percentage = (int) (100D * (fullySavedTotal / (double) existingTotal));
+                return Translate.gui("loop_particles_not_ready", percentage + "%").withStyle(ChatFormatting.RED);
+            }
+        });
     }
 
     default void buildExportOptionGUIControls(Renderable<?> renderable, RenderScreen screen, FlowLayout container) {

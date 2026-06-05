@@ -5,6 +5,7 @@ import com.pigicial.wikirenderer.property.DoubleProperty;
 import com.pigicial.wikirenderer.property.IntProperty;
 import com.pigicial.wikirenderer.property.Property;
 import com.pigicial.wikirenderer.util.Translate;
+import io.wispforest.owo.ui.component.ButtonComponent;
 import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.component.TextBoxComponent;
 import io.wispforest.owo.ui.component.UIComponents;
@@ -17,6 +18,7 @@ import io.wispforest.owo.ui.core.VerticalAlignment;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class WikiRendererUI {
@@ -37,7 +39,7 @@ public class WikiRendererUI {
             TextBoxComponent textBox = new IntegerPropertyTextFieldComponent(screen, sizing, property, false);
 
             builder.row.child(textBox);
-            builder.row.child(UIComponents.label(Translate.gui(key)).margins(Insets.left(8)));
+            builder.row.child(new AutoResizingLabelComponent(Translate.gui(key), textBox.width() - 10).margins(Insets.left(8)));
         }
     }
 
@@ -74,19 +76,25 @@ public class WikiRendererUI {
     }
 
     public static void booleanControl(FlowLayout container, Property<Boolean> property, String key, Object... args) {
-        container.child(new PropertyCheckboxComponent(Translate.gui(key, args), property).margins(Insets.top(5)));
+        container.child(new PropertyCheckboxComponent(Translate.gui(key, args), property).margins(Insets.of(2, 1, 0, 0)));
     }
 
     public static void conditionalBooleanControl(FlowLayout container, Property<Boolean> property, String key, Supplier<Boolean> displayCondition) {
-        UIComponent checkbox = new PropertyCheckboxComponent(Translate.gui(key), property).margins(Insets.top(5));
+        UIComponent checkbox = new PropertyCheckboxComponent(Translate.gui(key), property).margins(Insets.of(2, 1, 0, 0));
         container.child(new DynamicComponent(checkbox, displayCondition));
+    }
+
+    public static ButtonComponent button(Component message, Consumer<ButtonComponent> onPress) {
+        ButtonComponent button = UIComponents.button(message, onPress);
+        button.margins(Insets.of(2, 3, 0, 0));
+        return button;
     }
 
     public static LabelComponent text(FlowLayout container, String key, boolean extraVerticalMargins) {
         LabelComponent label = new AutoResizingLabelComponent(Translate.gui(key));
         label.shadow(true);
         if (extraVerticalMargins) {
-            label.margins(Insets.top(20));
+            label.margins(Insets.top(15));
         }
         label.margins(label.margins().get().withBottom(5));
 
@@ -153,7 +161,7 @@ public class WikiRendererUI {
 
     public static RowBuilder autoNewLineRow(FlowLayout container) {
         FlowLayout layout = UIContainers.ltrTextFlow(Sizing.fill(100), Sizing.content());
-        layout.margins(Insets.of(5, 5, 0, 0)).verticalAlignment(VerticalAlignment.CENTER);
+        layout.margins(Insets.of(3, 3, 0, 0)).verticalAlignment(VerticalAlignment.CENTER);
         return new RowBuilder(layout, container);
     }
 

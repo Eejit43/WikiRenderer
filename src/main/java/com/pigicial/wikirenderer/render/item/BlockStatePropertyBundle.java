@@ -21,6 +21,7 @@ public class BlockStatePropertyBundle extends DefaultCroppablePropertyBundle imp
     @Override
     public void buildRenderOptionGUIControls(Renderable<?> renderable, RenderScreen screen, FlowLayout container) {
         WikiRendererUI.booleanControl(container, GlobalProperties.get().tickParticles, "particles");
+        this.buildLoopParticlesOption(container);
     }
 
     @Override

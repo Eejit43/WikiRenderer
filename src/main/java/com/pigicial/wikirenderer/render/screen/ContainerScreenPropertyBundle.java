@@ -100,9 +100,4 @@ public class ContainerScreenPropertyBundle extends DefaultCroppablePropertyBundl
 
         modelViewStack.translate(-screenWidth / 2.0f, -screenHeight / 2.0f, 0.0f);
     }
-
-    @Override
-    public boolean supportsAutomaticRotations() {
-        return false;
-    }
 }

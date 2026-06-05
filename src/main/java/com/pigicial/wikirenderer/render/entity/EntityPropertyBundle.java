@@ -13,7 +13,6 @@ import com.pigicial.wikirenderer.screen.WikiRendererUI;
 import com.pigicial.wikirenderer.util.Translate;
 import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.component.TextBoxComponent;
-import io.wispforest.owo.ui.component.UIComponents;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.Color;
 import io.wispforest.owo.ui.core.Insets;
@@ -150,11 +149,6 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
     }
 
     @Override
-    public boolean supportsAutomaticRotations() {
-        return !this.spriteRendering.get();
-    }
-
-    @Override
     public void buildMainGUIControls(Renderable<?> r, RenderScreen screen, FlowLayout container) {
         EntityRenderable renderable = (EntityRenderable) r;
 
@@ -174,6 +168,7 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
             WikiRendererUI.intControl(screen, container, this.rotation, "rotation");
             WikiRendererUI.doubleControl(screen, container, this.slant, "slant");
             WikiRendererUI.intControl(screen, container, this.rotationSpeed, "rotation_speed");
+            WikiRendererUI.conditionalBooleanControl(container, GlobalProperties.get().syncRotationToAnimation, "sync_rotation_to_animation", () -> !rotationSpeed.isDefault());
         } else {
             WikiRendererUI.intControl(screen, container, this.spriteScale, "scale");
             WikiRendererUI.intControl(screen, container, this.spriteRotation, "rotation");
@@ -182,11 +177,12 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
         WikiRendererUI.booleanControl(container, this.allowRotatingWithMouse, "allow_rotating_with_mouse");
         if (!this.spriteRendering.get()) {
             try (WikiRendererUI.RowBuilder builder = WikiRendererUI.autoNewLineRow(container)) {
-                builder.row.child(UIComponents.button(Translate.gui("dimetric_recommended"), _ -> {
+                builder.row.margins(Insets.none());
+                builder.row.child(WikiRendererUI.button(Translate.gui("dimetric_recommended"), _ -> {
                     this.rotation.setToDefault();
                     this.slant.set(30D);
                 }));
-                builder.row.child(UIComponents.button(Translate.gui("isometric"), _ -> {
+                builder.row.child(WikiRendererUI.button(Translate.gui("isometric"), _ -> {
                     this.rotation.setToDefault();
                     this.slant.set(35.264);
                 }));
@@ -253,7 +249,7 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
 
         WikiRendererUI.text(container, "entity_data", 10);
         if (renderable.liveNonTickableEntity != null) {
-            container.child(UIComponents.button(Translate.gui("copy_entity_coordinates"), _ -> {
+            container.child(WikiRendererUI.button(Translate.gui("copy_entity_coordinates"), _ -> {
                 Vec3 coords = renderable.getUsedEntity().position();
 
                 DecimalFormat df = new DecimalFormat("0.#######");
@@ -324,7 +320,7 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
     }
 
     private UIComponent buildResetEntityOverridesButton(EntityRenderable renderable) {
-        return UIComponents.button(Translate.gui("reset_entity_overrides"), _ -> {
+        return WikiRendererUI.button(Translate.gui("reset_entity_overrides"), _ -> {
             this.showSurroundingEntities.setToDefault();
             this.surroundingEntitiesRadius.setToDefault();
             this.showHiddenSurroundingEntitiesList.setToDefault();
@@ -353,7 +349,7 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
             EntityRenderable.ENTITY_SPECIFIC_OVERRIDES_BY_ID.clear();
             renderable.selectedEntityId = null;
             renderable.renderStateOverrides = null;
-        }).margins(Insets.of(5, 0, 0, 0));
+        });
     }
 
     @Override
@@ -362,13 +358,17 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
         super.buildRenderOptionGUIControls(renderable, screen, container);
 
         if (renderable.liveNonTickableEntity != null) {
-            WikiRendererUI.booleanControl(container, GlobalProperties.get().tickParticles, "show_surrounding_particles");
-            GlobalProperties.get().tickParticles.addRebuildListener(screen);
-            if (GlobalProperties.get().tickParticles.get()) {
+            GlobalProperties globalProperties = GlobalProperties.get();
+
+            WikiRendererUI.booleanControl(container, globalProperties.tickParticles, "show_surrounding_particles");
+            globalProperties.tickParticles.addRebuildListener(screen);
+            if (globalProperties.tickParticles.get()) {
                 WikiRendererUI.doubleControl(screen, container, surroundingParticlesRadius, "surrounding_particles_radius");
                 if (!useLiveEntity.get()) {
                     WikiRendererUI.text(container, Translate.gui("show_surrounding_particles_non_live_entities_warning").withStyle(ChatFormatting.RED), 5);
                 }
+
+                this.buildLoopParticlesOption(container);
             }
         }
     }

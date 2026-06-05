@@ -57,11 +57,6 @@ public class ItemAtlasPropertyBundle extends DefaultCroppablePropertyBundle impl
     }
 
     @Override
-    public boolean supportsAutomaticRotations() {
-        return false;
-    }
-
-    @Override
     public void applyToViewMatrix(Renderable<?> renderable, Matrix4fStack modelViewStack) {
         float scale = this.scale.get() / 100f;
         modelViewStack.scale(scale, scale, scale);

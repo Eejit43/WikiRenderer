@@ -6,6 +6,7 @@ import com.pigicial.wikirenderer.property.Property;
 import com.pigicial.wikirenderer.property.SerializablePropertyBundle;
 import com.pigicial.wikirenderer.property.config.WikiRendererConfigs;
 import com.pigicial.wikirenderer.render.Renderable;
+import com.pigicial.wikirenderer.render.export.ImageRescaleMode;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.screen.WikiRendererUI;
 import com.pigicial.wikirenderer.util.ItemBlockUtil;
@@ -17,6 +18,7 @@ public class ItemRenderablePropertyBundle extends DefaultCroppablePropertyBundle
 
     public static final ItemRenderablePropertyBundle INSTANCE = WikiRendererConfigs.loadOrDefault(new ItemRenderablePropertyBundle());
 
+    public final Property<Boolean> allowScalingWithMouse = Property.of(false);
     public final Property<Boolean> forceEnchantmentGlints = Property.of(false);
     protected int blockItemsExportResolution = 300;
 
@@ -64,6 +66,13 @@ public class ItemRenderablePropertyBundle extends DefaultCroppablePropertyBundle
     }
 
     @Override
+    public void modifyScale(double amount) {
+        if (allowScalingWithMouse.get() || (crop.get() && rescaleMode.get() != ImageRescaleMode.DISABLED)) {
+            super.modifyScale(amount);
+        }
+    }
+
+    @Override
     public void applyToViewMatrix(Renderable<?> renderable, Matrix4fStack modelViewStack) {
         float scale = (this.scale.get() / 100f) * 2f;
         modelViewStack.scale(scale, scale, scale);
@@ -78,6 +87,10 @@ public class ItemRenderablePropertyBundle extends DefaultCroppablePropertyBundle
     public void buildMainGUIControls(Renderable<?> renderable, RenderScreen screen, FlowLayout container) {
         WikiRendererUI.text(container, "transform_options", false);
         WikiRendererUI.intControl(screen, container, scale, "scale");
+        if (!crop.get() || rescaleMode.get() == ImageRescaleMode.DISABLED) {
+            WikiRendererUI.booleanControl(container, this.allowScalingWithMouse, "allow_scaling_with_mouse");
+        }
+
         WikiRendererUI.text(container, "item_scale_warning_1", 10);
         WikiRendererUI.text(container, "item_scale_warning_2", false);
         WikiRendererUI.intControl(screen, container, rotation, "rotation");

@@ -82,9 +82,12 @@ public class PropertyBundleAdapterFactory implements TypeAdapterFactory {
                     Field field = fieldMap.get(name);
                     if (field == null) {
                         WikiRenderer.LOGGER.warn("Couldn't find config field {}, ignoring", name);
+                        in.skipValue();
                         continue;
                     }
+
                     if (Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers())) {
+                        in.skipValue();
                         continue;
                     }
 

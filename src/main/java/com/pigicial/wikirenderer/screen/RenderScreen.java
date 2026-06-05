@@ -31,7 +31,6 @@ import com.pigicial.wikirenderer.render.export.animation.gifski.GifskiDispatcher
 import com.pigicial.wikirenderer.render.export.animation.gifski.MemoryBasedGifskiAnimationHandler;
 import com.pigicial.wikirenderer.render.item.AnimationTimingsProvider;
 import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
-import com.pigicial.wikirenderer.render.particle.ParticleRendererAndLooper;
 import com.pigicial.wikirenderer.render.skyblock.frame_based.DyedArmorFrameBasedRenderable;
 import com.pigicial.wikirenderer.render.skyblock.frame_based.FrameBasedRenderable;
 import com.pigicial.wikirenderer.render.skyblock.frame_based.ItemFrameBasedRenderable;
@@ -50,7 +49,6 @@ import io.wispforest.owo.ui.util.FocusHandler;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -239,8 +237,8 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
     protected void build(FlowLayout rootComponent) {
         WikiRenderer.particleDisplayCondition = this.renderable.getParticleDisplayCondition();
 
-        this.leftColumn.margins(Insets.top(20));
-        this.rightColumn.margins(Insets.top(20));
+        this.leftColumn.margins(Insets.top(12));
+        this.rightColumn.margins(Insets.top(12));
 
         for (Property<?> propertyListener : propertyListeners) {
             propertyListener.removeListeners(this);
@@ -292,6 +290,7 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
 
         WikiRendererUI.booleanControl(rightColumn, globalProperties.showBackgroundColorInExports, "show_background_color_in_exports");
         WikiRendererUI.booleanControl(rightColumn, globalProperties.tickTextureAnimations, "texture_animations");
+        WikiRendererUI.conditionalBooleanControl(rightColumn, globalProperties.syncTextureAnimationsToAnimation, "sync_texture_animations", globalProperties.tickTextureAnimations::get);
     }
 
     private void buildFFmpegCustomPathSection() {
@@ -475,13 +474,6 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
             WikiRendererUI.labelledTextField(this, rightColumn, globalProperties.exportFrames, "animation_frames", Sizing.fixed(30));
             WikiRendererUI.labelledTextField(this, rightColumn, globalProperties.exportFramerate, "animation_framerate", Sizing.fixed(30));
 
-            if (renderable.getProperties() instanceof DefaultPropertyBundle defaultBundle) {
-                if (defaultBundle.supportsAutomaticRotations()) {
-                    WikiRendererUI.booleanControl(rightColumn, globalProperties.syncRotationToAnimation, "sync_rotation_to_animation");
-                }
-            }
-
-            WikiRendererUI.booleanControl(rightColumn, globalProperties.syncTextureAnimationsToAnimation, "sync_texture_animations");
             WikiRendererUI.booleanControl(rightColumn, globalProperties.syncEnchantmentGlintsToExport, "sync_enchantment_glints");
             WikiRendererUI.booleanControl(rightColumn, globalProperties.speedUpEnchantmentGlints, "speed_up_enchantment_glints");
             globalProperties.speedUpEnchantmentGlints.futureListen(this, (_, _) -> guiRebuildScheduled = true);
@@ -494,18 +486,6 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
                     globalProperties.exportFrames.set(seconds * framerate);
                 }).margins(Insets.vertical(5)));
             }
-
-            WikiRendererUI.conditionalBooleanControl(rightColumn, globalProperties.loopParticles, "loop_particles", () -> globalProperties.setAnimationFpsCap.get() && globalProperties.exportFramerate.get() == 20);
-            WikiRendererUI.dynamicConditionalText(rightColumn, () -> globalProperties.loopParticles.get() && globalProperties.setAnimationFpsCap.get() && globalProperties.exportFramerate.get() == 20, () -> {
-                int existingTotal = ParticleRendererAndLooper.getAtLeastPartiallySavedParticleCount();
-                int fullySavedTotal = ParticleRendererAndLooper.getFullySavedParticleCount();
-                if (existingTotal == fullySavedTotal) {
-                    return Translate.gui("loop_particles_ready").withStyle(ChatFormatting.GREEN);
-                } else {
-                    int percentage = (int) (100D * (fullySavedTotal / (double) existingTotal));
-                    return Translate.gui("loop_particles_not_ready", percentage + "%").withStyle(ChatFormatting.RED);
-                }
-            });
 
             if (renderable instanceof AnimationTimingsProvider timingsProvider) {
                 timingsProvider.buildTimingsSection(rightColumn);
@@ -809,7 +789,7 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
         }
 
         if (this.isInViewport(mouseX)) {
-            properties.scale.modify((int) (verticalAmount * Math.max(1, properties.scale.get() * 0.075)));
+            properties.modifyScale((int) (verticalAmount * Math.max(1, properties.scale.get() * 0.075)));
             return true;
         }
 
