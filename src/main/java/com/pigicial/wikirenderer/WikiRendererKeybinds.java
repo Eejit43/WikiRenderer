@@ -86,7 +86,11 @@ public class WikiRendererKeybinds {
             }
         });
 
-        ScreenEvents.AFTER_INIT.register((client, screen, _, _) -> ScreenKeyboardEvents.afterKeyPress(screen).register((s, key) -> {
+        ScreenEvents.AFTER_INIT.register((client, screen, _, _) -> ScreenKeyboardEvents.afterKeyPress(screen).register((_, key) -> {
+            if (Minecraft.getInstance().options.keyDebugModifier.isDown()) {
+                return;
+            }
+
             if (KEYBIND_RENDER_HOVERED_ITEM_OR_VIEWED_ENTITY.matches(key)) {
                 ItemStack hoveredSlot = getHoveredSlot(client);
                 if (hoveredSlot != null) {
