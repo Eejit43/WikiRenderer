@@ -93,7 +93,7 @@ public interface PropertyBundle {
 
     default void buildFileNameGUIControls(Renderable<?> renderable, RenderScreen screen, FlowLayout container) {
         screen.fileNameField = WikiRendererUI.labelledTextField(container, renderable.getCustomFileName(), "file_name", Sizing.expand(90));
-        screen.fileNameField.setFilter(s -> s.matches("^[^<>:\"/\\\\|?*\\x00-\\x1F]*$")); // file name regex
+        screen.fileNameField.setFilter(s -> s.matches("^[^<>:\"|?*\\\\x00-\\\\1F]*$")); // file name regex
         screen.fileNameField.onChanged().subscribe(renderable::setCustomFileName);
     }
 

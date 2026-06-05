@@ -154,7 +154,7 @@ public class BatchPropertyBundle extends DefaultCroppablePropertyBundle {
         BatchRenderable<?> batchRenderable = (BatchRenderable<?>) renderable;
         if (!batchRenderable.delegates.isEmpty() && this.batchRenderable.currentDelegate instanceof DynamicBatchLabelProvider labelProvider) {
             screen.fileNameField = WikiRendererUI.labelledTextField(container, fileNameFormatter, "batch.file_name_preset", Sizing.fixed(120));
-            screen.fileNameField.setFilter(s -> s.matches("^[^<>:\"/\\\\|?*\\x00-\\x1F]*$")); // file name regex
+            screen.fileNameField.setFilter(s -> s.matches("^[^<>:\"|?*\\\\x00-\\\\1F]*$")); // file name regex
             screen.fileNameField.onChanged().subscribe(renderable::setCustomFileName);
 
             WikiRendererUI.text(container, "batch.label_presets", 10);

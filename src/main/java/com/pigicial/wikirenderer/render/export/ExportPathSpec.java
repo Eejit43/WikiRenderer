@@ -25,11 +25,23 @@ public record ExportPathSpec(String rootOffset, String filename, boolean ignoreS
     // -----
 
     public Path resolveOffset() {
-        return exportRoot().resolve(this.effectiveOffset());
+        return exportRoot().resolve(this.effectiveOffset()).resolve(resolvedFilenamePath()).getParent();
+    }
+
+    private Path resolvedFilenamePath() {
+        Path result = Path.of("");
+        String[] parts = this.filename.split("/");
+        for (String part : parts) {
+            result = result.resolve(part);
+        }
+        return result;
     }
 
     public File resolveFile(String extension) {
-        return FileIO.next(exportRoot().resolve(this.effectiveOffset()).resolve(this.filename + "." + extension)).toFile();
+        Path resolved = exportRoot().resolve(this.effectiveOffset()).resolve(resolvedFilenamePath());
+        String actualFileName = resolved.getFileName().toString();
+        Path parent = resolved.getParent();
+        return FileIO.next(parent.resolve(actualFileName + "." + extension)).toFile();
     }
 
     public ExportPathSpec relocate(String newOffset) {
