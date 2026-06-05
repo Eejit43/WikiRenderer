@@ -200,7 +200,7 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
         this.currentIndexTicksLeft = timingData.getTickTimingMinimized(currentIndex);
 
         GlobalProperties.get().exportFramerate.set(timingData.getFPS());
-        GlobalProperties.get().exportFrames.set(timingData.getExportTickDuration());
+        GlobalProperties.get().exportFrames.set(timingData.getTotalTickDuration());
     }
 
     private void next(RenderScreen screen) {

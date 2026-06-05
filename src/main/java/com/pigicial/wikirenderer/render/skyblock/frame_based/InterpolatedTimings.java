@@ -32,33 +32,14 @@ public class InterpolatedTimings {
     }
 
     public int getTickTimingMinimized(int index) {
-        int gcd = this.getGreatestCommonDivisor();
-        int raw = this.frameTimes.get(index).getAverageTickTime();
         if (useCustomFrameTime.get() && customFrameTime != null) {
-            raw = customFrameTime.get();
+            return customFrameTime.get();
+        } else {
+            return this.frameTimes.get(index).getAverageTickTime();
         }
-        return gcd > 1 ? raw / gcd : raw;
     }
 
-    private int getGreatestCommonDivisor() {
-        if (true) return 1;
-        int divisor = frameTimes.stream()
-                .mapToInt(time -> {
-                    int averageTickTime = time.getAverageTickTime();
-                    return useCustomFrameTime.get() && customFrameTime != null ? customFrameTime.get() : averageTickTime;
-                })
-                .reduce(0, InterpolatedTimings::gcd);
-        if (20D / divisor != (int) (20D / divisor)) {
-            return 1;
-        }
-        return divisor;
-    }
-
-    private static int gcd(int a, int b) {
-        return b == 0 ? a : gcd(b, a % b);
-    }
-
-    public int getTotalTickDuration() {
+    public int getRawTotalTickDuration() {
         int ticks = 0;
         for (FrameTime frameTime : frameTimes) {
             ticks += frameTime.getAverageTickTime();
@@ -66,7 +47,7 @@ public class InterpolatedTimings {
         return ticks;
     }
 
-    public int getTotalTickDurationWithOverriding() {
+    public int getTotalTickDuration() {
         int ticks = 0;
         for (FrameTime frameTime : frameTimes) {
             if (useCustomFrameTime.get() && customFrameTime != null) {
@@ -78,21 +59,8 @@ public class InterpolatedTimings {
         return ticks;
     }
 
-    public int getExportTickDuration() {
-        int ticks = 0;
-        for (FrameTime frameTime : frameTimes) {
-            if (useCustomFrameTime.get() && customFrameTime != null) {
-                ticks += customFrameTime.get();
-            } else {
-                ticks += frameTime.getAverageTickTime();
-            }
-        }
-        int gcd = this.getGreatestCommonDivisor();
-        return gcd > 1 ? ticks / gcd : ticks;
-    }
-
     public int getFPS() {
-        return 20 / getGreatestCommonDivisor();
+        return 20;
     }
 
     public String getTickValues() {

@@ -94,7 +94,7 @@ public class FrameBasedPropertyBundle<S, R extends Renderable<P>, P extends Prop
             if (timingData != null) {
                 int amountOfLoops = timingData.getAmountOfLoops();
                 MutableComponent data = Translate.gui("ticks_amount_with_data",
-                        timingData.getTotalTickDuration(),
+                        timingData.getRawTotalTickDuration(),
                         timingData.getTickValues(),
                         amountOfLoops,
                         amountOfLoops == 1 ? "" : "s"
@@ -102,7 +102,7 @@ public class FrameBasedPropertyBundle<S, R extends Renderable<P>, P extends Prop
 
                 if (timingData.getUseCustomFrameTimeProperty().get()) {
                     data.withStyle(ChatFormatting.STRIKETHROUGH);
-                    data = Translate.gui("ticks_amount", timingData.getTotalTickDurationWithOverriding()).append(" ").append(data.withStyle(ChatFormatting.DARK_GRAY));
+                    data = Translate.gui("ticks_amount", timingData.getTotalTickDuration()).append(" ").append(data.withStyle(ChatFormatting.DARK_GRAY));
                 }
 
                 return Translate.gui("animation_timing_data", data);
