@@ -56,31 +56,36 @@ public class RenderablePlayerEntity extends LocalPlayer {
                 new ChatAbilities.Builder().build()
         );
 
-        this.skinTextures = DefaultPlayerSkin.get(profile);
-        this.skinGrabber = CompletableFuture.supplyAsync(() -> {
-            ProfileResolver profileResolver = Minecraft.getInstance().services().profileResolver();
-            return switch (fetchMode) {
-                case NAME -> profileResolver.fetchByName(profile.name()).orElse(profile);
-                case UUID -> profileResolver.fetchById(profile.id()).orElse(profile);
-                case TEXTURE -> {
-                    ClientPacketListener connection = Minecraft.getInstance().getConnection();
-                    if (connection != null) {
-                        PlayerInfo playerInfo = connection.getPlayerInfo(profile.id());
-                        yield playerInfo != null ? playerInfo.getProfile() : profile;
-                    } else {
-                        yield profile;
+        if (profile.name().equals("Steve")) {
+            skinTextures = DefaultPlayerSkin.getDefaultSkin();
+            skinGrabber = CompletableFuture.completedFuture(null);
+        } else {
+            this.skinTextures = DefaultPlayerSkin.get(profile);
+            this.skinGrabber = CompletableFuture.supplyAsync(() -> {
+                ProfileResolver profileResolver = Minecraft.getInstance().services().profileResolver();
+                return switch (fetchMode) {
+                    case NAME -> profileResolver.fetchByName(profile.name()).orElse(profile);
+                    case UUID -> profileResolver.fetchById(profile.id()).orElse(profile);
+                    case TEXTURE -> {
+                        ClientPacketListener connection = Minecraft.getInstance().getConnection();
+                        if (connection != null) {
+                            PlayerInfo playerInfo = connection.getPlayerInfo(profile.id());
+                            yield playerInfo != null ? playerInfo.getProfile() : profile;
+                        } else {
+                            yield profile;
+                        }
                     }
-                }
-            };
-        }, Util.backgroundExecutor()).thenCompose(completeProfile -> {
-            this.skinTextures = DefaultPlayerSkin.get(completeProfile);
+                };
+            }, Util.backgroundExecutor()).thenCompose(completeProfile -> {
+                this.skinTextures = DefaultPlayerSkin.get(completeProfile);
 
-            // Step C: Return the skin manager's future (this is why we use thenCompose)
-            return this.minecraft.getSkinManager().get(completeProfile).thenApply(optionalSkin -> {
-                this.skinTextures = optionalSkin.orElse(DefaultPlayerSkin.get(completeProfile));
-                return PlayerTextureUtils.getTextureDataFromGameProfile(completeProfile);
+                // Step C: Return the skin manager's future (this is why we use thenCompose)
+                return this.minecraft.getSkinManager().get(completeProfile).thenApply(optionalSkin -> {
+                    this.skinTextures = optionalSkin.orElse(DefaultPlayerSkin.get(completeProfile));
+                    return PlayerTextureUtils.getTextureDataFromGameProfile(completeProfile);
+                });
             });
-        });
+        }
     }
 
     public CompletableFuture<TextureData> getSkinGrabber() {

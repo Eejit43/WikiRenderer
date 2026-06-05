@@ -4,9 +4,11 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.pigicial.wikirenderer.mixin.access.LevelAccessor;
+import com.pigicial.wikirenderer.property.GlobalProperties;
 import com.pigicial.wikirenderer.render.entity.EntityRenderBoundsUtil;
 import com.pigicial.wikirenderer.render.entity.EntityRenderable;
 import com.pigicial.wikirenderer.render.entity.EntityVertexBounds;
+import com.pigicial.wikirenderer.render.skyblock.frame_based.*;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.screen.ScreenSchedulerAndSaver;
 import com.pigicial.wikirenderer.util.Translate;
@@ -26,6 +28,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.AttackRange;
@@ -116,7 +119,35 @@ public class RenderEntitySubCommand extends WikiRendererSubCommand {
             return;
         }
 
+        if (GlobalProperties.get().sbFrameRenderingKeybindOverrides.get()) {
+            tryToRenderFrameDataInstead(targetEntity, context);
+            return;
+        }
+
         ScreenSchedulerAndSaver.schedule(new RenderScreen(EntityRenderable.fromEntity(targetEntity)));
+    }
+
+    private static void tryToRenderFrameDataInstead(Entity targetEntity, CommandContext<FabricClientCommandSource> context) {
+        if (!(targetEntity instanceof LivingEntity livingEntity)) {
+            Translate.commandError(context, "not_equippable_entity");
+            return;
+        }
+
+        SkyBlockTimingDataCacher cacher = SkyBlockTimingDataCacher.getInstance();
+        HeadTexturesTiming textureData = cacher.getTextureData(livingEntity);
+        DyeColorTiming dyeColorData = cacher.getDyeColorData(livingEntity);
+        if (textureData == null && dyeColorData == null) {
+            Translate.commandError(context, "no_texture_or_dye_color_data");
+            return;
+        }
+        if (textureData != null) {
+            textureData.log();
+            ScreenSchedulerAndSaver.schedule(new RenderScreen(new ItemFrameBasedRenderable(targetEntity.getUUID(), textureData::getTextureTimings)));
+        } else {
+            dyeColorData.log();
+            ScreenSchedulerAndSaver.schedule(new RenderScreen(new DyedArmorFrameBasedRenderable(targetEntity.getUUID(), dyeColorData::getColorTimings)));
+        }
+
     }
 
     public static Entity getClosestHit(Player source, AttackRange attackRange) {

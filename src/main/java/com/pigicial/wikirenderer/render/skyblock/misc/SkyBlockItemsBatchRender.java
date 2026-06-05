@@ -1,4 +1,4 @@
-package com.pigicial.wikirenderer.render.skyblock;
+package com.pigicial.wikirenderer.render.skyblock.misc;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;

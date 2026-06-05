@@ -1,4 +1,4 @@
-package com.pigicial.wikirenderer.render.skyblock;
+package com.pigicial.wikirenderer.render.skyblock.misc;
 
 import com.pigicial.wikirenderer.render.batch.BatchRenderable;
 import com.pigicial.wikirenderer.render.entity.EntityRenderable;

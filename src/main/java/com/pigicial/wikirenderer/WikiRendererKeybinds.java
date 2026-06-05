@@ -4,13 +4,18 @@ import com.pigicial.wikirenderer.command.subcommands.RenderBlockSubCommand;
 import com.pigicial.wikirenderer.command.subcommands.RenderEntitySubCommand;
 import com.pigicial.wikirenderer.mixin.access.AbstractContainerScreenAccessor;
 import com.pigicial.wikirenderer.mixin.access.CreativeModeInventoryScreenAccessor;
+import com.pigicial.wikirenderer.property.GlobalProperties;
 import com.pigicial.wikirenderer.render.area.AreaSelectionHelper;
 import com.pigicial.wikirenderer.render.item.ItemRenderable;
 import com.pigicial.wikirenderer.render.item.TooltipRenderable;
 import com.pigicial.wikirenderer.render.screen.ContainerScreenRenderable;
+import com.pigicial.wikirenderer.render.skyblock.frame_based.SkyBlockTimingDataCacher;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.screen.ScreenSchedulerAndSaver;
 import com.pigicial.wikirenderer.screen.SelectRenderTaskScreen;
+import com.pigicial.wikirenderer.textures.PlayerTextureUtils;
+import com.pigicial.wikirenderer.textures.TextureData;
+import com.pigicial.wikirenderer.util.Translate;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
@@ -85,6 +90,17 @@ public class WikiRendererKeybinds {
             if (KEYBIND_RENDER_HOVERED_ITEM_OR_VIEWED_ENTITY.matches(key)) {
                 ItemStack hoveredSlot = getHoveredSlot(client);
                 if (hoveredSlot != null) {
+                    if (GlobalProperties.get().sbFrameRenderingKeybindOverrides.get()) {
+                        TextureData textureData = PlayerTextureUtils.getTextureDataFromPlayerHead(hoveredSlot);
+                        if (textureData == null) {
+                            Translate.sendMessage("sb_player_head_mark_first_fail");
+                        } else {
+                            Translate.sendMessage("sb_player_head_mark_first_success");
+                            SkyBlockTimingDataCacher.getInstance().markTextureAsFirst(textureData);
+                        }
+
+                        return;
+                    }
                     ScreenSchedulerAndSaver.openImmediately(new RenderScreen(new ItemRenderable(hoveredSlot)));
                 }
             }

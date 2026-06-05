@@ -77,4 +77,6 @@ public interface Renderable<P extends PropertyBundle> {
     default int optionallyOverrideExportHeight(int height) {
         return height;
     }
+
+    default void onAnimationStart() {}
 }

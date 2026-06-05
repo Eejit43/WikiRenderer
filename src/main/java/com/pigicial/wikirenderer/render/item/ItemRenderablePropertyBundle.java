@@ -10,6 +10,7 @@ import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.screen.WikiRendererUI;
 import com.pigicial.wikirenderer.util.ItemBlockUtil;
 import io.wispforest.owo.ui.container.FlowLayout;
+import net.minecraft.world.item.Items;
 import org.joml.Matrix4fStack;
 
 public class ItemRenderablePropertyBundle extends DefaultCroppablePropertyBundle implements SerializablePropertyBundle {
@@ -85,7 +86,10 @@ public class ItemRenderablePropertyBundle extends DefaultCroppablePropertyBundle
         WikiRendererUI.booleanControl(container, this.allowRotatingWithMouse, "allow_rotating_with_mouse");
         container.child(this.buildResetButton());
 
-        WikiRendererUI.text(container, "item_options", true);
-        WikiRendererUI.booleanControl(container, forceEnchantmentGlints, "force_enchanted");
+        // todo figure out a better way to check for glint support
+        if (!((ItemRenderable) renderable).stack.is(Items.PLAYER_HEAD)) {
+            WikiRendererUI.text(container, "item_options", true);
+            WikiRendererUI.booleanControl(container, forceEnchantmentGlints, "force_enchanted");
+        }
     }
 }

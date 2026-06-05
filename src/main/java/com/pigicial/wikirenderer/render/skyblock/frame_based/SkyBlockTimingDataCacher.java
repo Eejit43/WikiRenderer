@@ -1,0 +1,151 @@
+package com.pigicial.wikirenderer.render.skyblock.frame_based;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.mojang.authlib.GameProfile;
+import com.pigicial.wikirenderer.mixin.access.LevelAccessor;
+import com.pigicial.wikirenderer.render.entity.EntityPropertyBundle;
+import com.pigicial.wikirenderer.render.entity.EntityRenderable;
+import com.pigicial.wikirenderer.render.item.ItemRenderable;
+import com.pigicial.wikirenderer.render.item.ItemRenderablePropertyBundle;
+import com.pigicial.wikirenderer.textures.PlayerTextureUtils;
+import com.pigicial.wikirenderer.textures.TextureData;
+import io.wispforest.owo.ui.event.ClientRenderCallback;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.DyedItemColor;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+public class SkyBlockTimingDataCacher {
+
+    public static SkyBlockTimingDataCacher INSTANCE = new SkyBlockTimingDataCacher();
+
+    public static SkyBlockTimingDataCacher getInstance() {
+        return INSTANCE;
+    }
+
+    private final Cache<UUID, HeadTexturesTiming> textureData = CacheBuilder.newBuilder()
+            .expireAfterAccess(4, TimeUnit.MINUTES)
+            .build();
+    private final Map<GameProfile, InterpolatedTimings> combinedTextureAnimationFrameTimings = new HashMap<>();
+
+    private final Cache<UUID, DyeColorTiming> dyeColorData = CacheBuilder.newBuilder()
+            .expireAfterAccess(4, TimeUnit.MINUTES)
+            .build();
+    private final Map<DyedArmorColorData, InterpolatedTimings> combinedDyeColorAnimationFrameTimings = new HashMap<>();
+
+    @Nullable
+    private TextureData textureMarkedAsFirstForNextRender = null;
+
+    public void startTickEvent() {
+        ClientRenderCallback.AFTER.register(_ -> scanEntitiesForData());
+    }
+
+    private void scanEntitiesForData() {
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null) return;
+
+        for (Entity entity : ((LevelAccessor) level).wikirenderer$getEntities().getAll()) {
+            if (!(entity instanceof LivingEntity livingEntity)) continue;
+
+            for (EquipmentSlot slot : EquipmentSlot.values()) {
+                ItemStack item = livingEntity.getItemBySlot(slot);
+                TextureData textureData = PlayerTextureUtils.getTextureDataFromPlayerHead(item);
+                if (textureData != null) {
+                    HeadTexturesTiming headTextures = this.textureData.getIfPresent(entity.getUUID());
+                    if (headTextures == null) {
+                        this.textureData.put(entity.getUUID(), new HeadTexturesTiming(textureData));
+                    } else {
+                        headTextures.submitTimings(textureData);
+                    }
+                }
+            }
+
+            DyedItemColor helmetColor = livingEntity.getItemBySlot(EquipmentSlot.HEAD).get(DataComponents.DYED_COLOR);
+            DyedItemColor chestplateColor = livingEntity.getItemBySlot(EquipmentSlot.CHEST).get(DataComponents.DYED_COLOR);
+            DyedItemColor leggingsColor = livingEntity.getItemBySlot(EquipmentSlot.LEGS).get(DataComponents.DYED_COLOR);
+            DyedItemColor bootsColor = livingEntity.getItemBySlot(EquipmentSlot.FEET).get(DataComponents.DYED_COLOR);
+
+            if (helmetColor != null && chestplateColor != null && leggingsColor != null && bootsColor != null) {
+                DyedArmorColorData colorData = new DyedArmorColorData(helmetColor.rgb(), chestplateColor.rgb(), leggingsColor.rgb(), bootsColor.rgb());
+                DyeColorTiming colorTiming = this.dyeColorData.getIfPresent(entity.getUUID());
+                if (colorTiming == null) {
+                    this.dyeColorData.put(entity.getUUID(), new DyeColorTiming(colorData));
+                } else {
+                    colorTiming.submitTimings(colorData);
+                }
+            }
+        }
+    }
+
+    public HeadTexturesTiming getTextureData(LivingEntity livingEntity) {
+        return textureData.getIfPresent(livingEntity.getUUID());
+    }
+
+    public DyeColorTiming getDyeColorData(LivingEntity livingEntity) {
+        return dyeColorData.getIfPresent(livingEntity.getUUID());
+    }
+
+    public void markTextureAsFirst(TextureData textureData) {
+        textureMarkedAsFirstForNextRender = textureData;
+    }
+
+    @Nullable
+    public TextureData getMarkedFirstTexture() {
+        return this.textureMarkedAsFirstForNextRender;
+    }
+
+    public InterpolatedTimings getTextureTimings(List<FrameData<TextureData, ItemRenderable, ItemRenderablePropertyBundle>> dataSet, int framesCount) {
+        for (int i = 0, dataSetSize = dataSet.size(); i < Math.min(dataSetSize, framesCount); i++) {
+            FrameData<TextureData, ItemRenderable, ItemRenderablePropertyBundle> data = dataSet.get(i);
+            InterpolatedTimings possibleTimings = this.combinedTextureAnimationFrameTimings.get(data.sourceData().profile());
+            if (possibleTimings != null) {
+                if (possibleTimings.getFrameCount() < framesCount) {
+                    this.combinedTextureAnimationFrameTimings.remove(data.sourceData().profile());
+                } else if (possibleTimings.getFrameCount() == framesCount) {
+                    return possibleTimings;
+                }
+            }
+        }
+
+        InterpolatedTimings timings = new InterpolatedTimings(framesCount);
+        this.combinedTextureAnimationFrameTimings.put(dataSet.getFirst().sourceData().profile(), timings);
+        return timings;
+    }
+
+    public InterpolatedTimings getColorTimings(List<FrameData<DyedArmorColorData, EntityRenderable, EntityPropertyBundle>> dataSet, int framesCount) {
+        for (int i = 0, dataSetSize = dataSet.size(); i < Math.min(dataSetSize, framesCount); i++) {
+            FrameData<DyedArmorColorData, EntityRenderable, EntityPropertyBundle> data = dataSet.get(i);
+            InterpolatedTimings possibleTimings = this.combinedDyeColorAnimationFrameTimings.get(data.sourceData());
+            if (possibleTimings != null) {
+                if (possibleTimings.getFrameCount() < framesCount) {
+                    this.combinedDyeColorAnimationFrameTimings.remove(data.sourceData());
+                } else if (possibleTimings.getFrameCount() == framesCount) {
+                    return possibleTimings;
+                }
+            }
+        }
+
+        InterpolatedTimings timings = new InterpolatedTimings(framesCount);
+        this.combinedDyeColorAnimationFrameTimings.put(dataSet.getFirst().sourceData(), timings);
+        return timings;
+    }
+
+    public void reset() {
+        textureData.invalidateAll();
+        dyeColorData.invalidateAll();
+        combinedTextureAnimationFrameTimings.clear();
+        combinedDyeColorAnimationFrameTimings.clear();
+    }
+}

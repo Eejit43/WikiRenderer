@@ -34,6 +34,7 @@ public class WikiRendererCommand {
         registerSubCommand(mainCommand, access, new RenderItemTooltipSubCommand());
         registerSubCommand(mainCommand, access, new GroupRenderSubCommand());
         registerSubCommand(mainCommand, access, new DebugSubCommand());
+        registerSubCommand(mainCommand, access, new SkyBlockSubCommand());
 
         LiteralCommandNode<FabricClientCommandSource> registeredMainCommand = dispatcher.register(mainCommand);
         dispatcher.register(literal("wr").redirect(registeredMainCommand));

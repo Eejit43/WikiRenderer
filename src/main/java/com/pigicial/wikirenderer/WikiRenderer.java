@@ -13,6 +13,7 @@ import com.pigicial.wikirenderer.render.particle.ParticleDisplayCondition;
 import com.pigicial.wikirenderer.render.area.AreaSelectionHelper;
 import com.pigicial.wikirenderer.render.area.MeshWorldOverrides;
 import com.pigicial.wikirenderer.render.export.FileIO;
+import com.pigicial.wikirenderer.render.skyblock.frame_based.SkyBlockTimingDataCacher;
 import com.pigicial.wikirenderer.util.DrawType;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.container.UIContainers;
@@ -71,6 +72,7 @@ public class WikiRenderer implements ClientModInitializer {
     public void onInitializeClient() {
         ClientCommandRegistrationCallback.EVENT.register(WikiRendererCommand::register);
         WikiRendererKeybinds.registerKeyBinds();
+        SkyBlockTimingDataCacher.getInstance().startTickEvent();
 
         String ioStateId = "io-state";
         String areaSelectionHintId = "area-selection-hint";

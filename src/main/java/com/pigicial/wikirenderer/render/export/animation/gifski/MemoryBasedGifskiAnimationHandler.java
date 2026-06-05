@@ -4,11 +4,14 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.pigicial.wikirenderer.WikiRenderer;
 import com.pigicial.wikirenderer.property.GlobalProperties;
+import com.pigicial.wikirenderer.property.Property;
 import com.pigicial.wikirenderer.render.Renderable;
 import com.pigicial.wikirenderer.render.export.*;
 import com.pigicial.wikirenderer.render.export.animation.AnimationHandler;
+import com.pigicial.wikirenderer.render.skyblock.frame_based.DyedArmorFrameBasedRenderable;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.util.Translate;
+import com.sun.jna.platform.win32.WinDef;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;
@@ -31,16 +34,29 @@ public class MemoryBasedGifskiAnimationHandler extends AnimationHandler {
             Minecraft.getInstance().getTextureManager().tick();
         }
 
-        GpuTexture texture = RenderableDispatcher.drawIntoTexture(this.screen, this.renderable, effectiveTickDelta, screen.getTimeSinceCreationMs(), renderable.getExportResolution());
-
         WikiRenderer.skipWorldRender = true;
+        CompletableFuture<NativeImage> future;
+        if (renderable instanceof DyedArmorFrameBasedRenderable dyedArmorFrameBasedRenderable) {
+            Property<ImageRescaleMode> rescaleMode = dyedArmorFrameBasedRenderable.getProperties().getRescaleMode();
+            ImageRescaleMode currentRescaleMode = rescaleMode.get();
+            // hardcode proper skyblock animated armor set rescaling
 
-        CompletableFuture<NativeImage> future = RenderableDispatcher.copyTextureIntoImage(texture)
-                .whenComplete((image, t) -> texture.close())
-                .thenApply(image -> {
-                    this.collectedCropData.add(ImageCropper.getCropData(image));
-                    return image;
-                });
+            rescaleMode.set(ImageRescaleMode.LONGER_SIDE);
+            future = RenderableDispatcher.drawIntoImage(this.screen, this.renderable, effectiveTickDelta, screen.getTimeSinceCreationMs(), renderable.getExportResolution(), true, null)
+                    .thenApply(image -> {
+                        this.collectedCropData.add(ImageCropper.getCropData(image));
+                        return image;
+                    });
+            rescaleMode.set(currentRescaleMode);
+        } else {
+            GpuTexture texture = RenderableDispatcher.drawIntoTexture(this.screen, this.renderable, effectiveTickDelta, screen.getTimeSinceCreationMs(), renderable.getExportResolution());
+            future = RenderableDispatcher.copyTextureIntoImage(texture)
+                    .whenComplete((_, _) -> texture.close())
+                    .thenApply(image -> {
+                        this.collectedCropData.add(ImageCropper.getCropData(image));
+                        return image;
+                    });
+        }
 
         this.frameExportFutures.add(future);
 
