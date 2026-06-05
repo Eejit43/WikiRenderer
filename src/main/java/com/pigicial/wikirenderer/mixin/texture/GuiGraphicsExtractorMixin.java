@@ -5,6 +5,7 @@ import com.pigicial.wikirenderer.render.screen.ContainerScreenPropertyBundle;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.LivingEntity;
@@ -42,6 +43,14 @@ public class GuiGraphicsExtractorMixin {
     @Inject(method = "item(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;III)V", at = @At("HEAD"), cancellable = true)
     private void wikirenderer$skipItem(LivingEntity livingEntity, Level level, ItemStack itemStack, int i, int j, int k, CallbackInfo ci) {
         if (WikiRenderer.inContainerScreenDraw && ContainerScreenPropertyBundle.INSTANCE.hideItems.get()) {
+            ci.cancel();
+        }
+    }
+
+    // see https://github.com/skyblock-wiki/WikiRenderer/issues/20
+    @Inject(method = "componentHoverEffect(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Style;II)V", at = @At("HEAD"), cancellable = true)
+    private void wikirenderer$onComponentHoverEffect(Font font, Style hoveredStyle, int xMouse, int yMouse, CallbackInfo ci) {
+        if (hoveredStyle == null) {
             ci.cancel();
         }
     }
