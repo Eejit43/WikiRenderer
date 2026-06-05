@@ -39,6 +39,10 @@ public class RenderPlayerSubCommand extends WikiRendererSubCommand {
                     this.renderSelf();
                     return 0;
                 })
+                .then(literal("self").executes(_ -> {
+                    this.renderSelf();
+                    return 0;
+                }))
                 .then(literal("name")
                         .then(argument("name", StringArgumentType.string())
                                 .executes(c -> {
