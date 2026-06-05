@@ -67,6 +67,9 @@
   "gui.wikirenderer.export_minimap_data": "Export Minimap Data",
 
   "gui.wikirenderer.force_enchanted": "Force Enchantment Glint",
+  "gui.wikirenderer.override_dye_color": "Override Dye Color",
+  "gui.wikirenderer.item_dye_color": "Item Dye Color: %s (%s)",
+  "gui.wikirenderer.original_dye_color": "Original Dye Color: %s (%s)",
   "gui.wikirenderer.item_scale_warning_1": "Note: It's recommended to",
   "gui.wikirenderer.item_scale_warning_2": "keep scale at 100% for items!",
 

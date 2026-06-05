@@ -14,10 +14,12 @@ import com.pigicial.wikirenderer.util.ItemNameUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.DyedItemColor;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4fStack;
 
@@ -29,6 +31,8 @@ public class ItemRenderable extends ItemBasedRenderable<ItemRenderablePropertyBu
 
     public final ItemStack stack;
     private Map<String, TextureData> textureData = null;
+
+    private DyedItemColor actualDyedItemColor = null;
 
     public ItemRenderable(ItemStack stack) {
         this.stack = stack;
@@ -62,9 +66,16 @@ public class ItemRenderable extends ItemBasedRenderable<ItemRenderablePropertyBu
 
     @Override
     public void prepare() {
-        if (getProperties().forceEnchantmentGlints.get()) {
+        ItemRenderablePropertyBundle properties = getProperties();
+        if (properties.forceEnchantmentGlints.get()) {
             WikiRenderer.overrideGlint = true;
         }
+
+        this.actualDyedItemColor = stack.get(DataComponents.DYED_COLOR);
+        if (properties.overrideDyeColors.get()) {
+            stack.set(DataComponents.DYED_COLOR, new DyedItemColor(properties.dyeColorOverride));
+        }
+
         Minecraft.getInstance().getItemModelResolver().appendItemLayers(
                 RENDER_STATE,
                 this.stack,
@@ -86,6 +97,9 @@ public class ItemRenderable extends ItemBasedRenderable<ItemRenderablePropertyBu
     public void cleanUp() {
         RENDER_STATE.clear();
         WikiRenderer.overrideGlint = false;
+        
+        stack.set(DataComponents.DYED_COLOR, this.actualDyedItemColor);
+        this.actualDyedItemColor = null;
     }
 
     @Override
