@@ -18,7 +18,7 @@ public class AlwaysTrueFrustum extends Frustum {
             Field field = Frustum.class.getDeclaredField("intersection");
             long offset = unsafe.objectFieldOffset(field);
             unsafe.putObject(this, offset, new AlwaysTrueFrustumIntersection());
-            WikiRenderer.LOGGER.info("Successfully replaced frustum particle intersection instance to fix Polytone mod particle overriding issues.w");
+            WikiRenderer.LOGGER.info("Successfully replaced frustum particle intersection instance to fix Polytone mod particle overriding issues.");
         } catch (Exception e) {
             WikiRenderer.LOGGER.error("Failed to replace frustum particle intersection instance. If you have the Polytone mod installed, particles may not render properly.", e);
         }
