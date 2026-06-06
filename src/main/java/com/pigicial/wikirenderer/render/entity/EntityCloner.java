@@ -36,11 +36,6 @@ public class EntityCloner {
             clonedEntity.getEntityData().assignValues(nonDefaultValues);
         }
 
-        if (clonedEntity instanceof LivingEntity living) {
-            living.hurtTime = 0;
-            living.deathTime = 0;
-        }
-
         if (clonedEntity instanceof Leashable leashableClone && source instanceof Leashable leashableSource) {
             leashableClone.setLeashData(leashableSource.getLeashData());
         }
@@ -50,10 +45,13 @@ public class EntityCloner {
         clonedEntity.setXRot(source.getXRot());
         clonedEntity.setYRot(source.getYRot());
         if (clonedEntity instanceof LivingEntity livingClone && source instanceof LivingEntity livingSource) {
+            livingClone.hurtTime = 0;
+            livingClone.deathTime = 0;
             livingClone.yHeadRot = livingSource.yHeadRot;
             livingClone.yHeadRotO = livingSource.yHeadRotO;
             livingClone.yBodyRot = livingSource.yBodyRot;
             livingClone.yBodyRotO = livingSource.yBodyRotO;
+            livingClone.getAttributes().assignAllValues(livingSource.getAttributes());
         }
 
         return clonedEntity;
@@ -115,6 +113,7 @@ public class EntityCloner {
         playerClone.yHeadRotO = originalPlayer.yHeadRotO;
         playerClone.yBodyRot = originalPlayer.yBodyRot;
         playerClone.yBodyRotO = originalPlayer.yBodyRotO;
+        playerClone.getAttributes().assignAllValues(originalPlayer.getAttributes());
 
         ElytraAnimationStateAccessor elytraData = (ElytraAnimationStateAccessor) playerClone.elytraAnimationState;
         elytraData.isometric$setRotX((float) (Math.PI / 12));
