@@ -23,12 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ParticleRendererAndLooper {
-    public static final Frustum ALWAYS_TRUE_PARTICLE_FRUSTUM = new Frustum(new Matrix4f(), new Matrix4f()) {
-        @Override
-        public boolean pointInFrustum(double d, double e, double f) {
-            return true;
-        }
-    };
+    public static final Frustum ALWAYS_TRUE_PARTICLE_FRUSTUM = new AlwaysTrueFrustum();
 
     private static final HashMap<Particle, SavedParticleData> SAVED_PARTICLES = new HashMap<>();
     public static boolean renderingParticles = false;
@@ -75,7 +70,6 @@ public class ParticleRendererAndLooper {
                 camera,
                 loopingParticles ? 0 : tickDelta // 0 for looping to ensure tickDelta consistency
         );
-
         /* submit and render to vertexconsumers */
         SubmitNodeStorage submitNodeStorage = client.gameRenderer.getSubmitNodeStorage();
         particleBatch.submit(submitNodeStorage, cameraRenderState);
