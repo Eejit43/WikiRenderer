@@ -8,7 +8,11 @@ import com.pigicial.wikirenderer.render.area.AreaSelectionHelper;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.screen.ScreenSchedulerAndSaver;
 import com.pigicial.wikirenderer.util.Translate;
+import fi.dy.masa.litematica.data.DataManager;
+import fi.dy.masa.litematica.selection.AreaSelection;
+import fi.dy.masa.litematica.selection.Box;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.CommandBuildContext;
@@ -29,12 +33,12 @@ public class RenderAreaSubCommand extends WikiRendererSubCommand {
 
     @Override
     public LiteralArgumentBuilder<FabricClientCommandSource> register(LiteralArgumentBuilder<FabricClientCommandSource> source, CommandBuildContext access) {
-        return source.executes(context -> {
-                    this.renderAreaSelection(context);
-                    return 0;
-                })
-                .then(literal("island")
-                        .then(argument("chunk_cube_size", IntegerArgumentType.integer(4, 32))
+        LiteralArgumentBuilder<FabricClientCommandSource> baseCommand = source.executes(context -> {
+            this.renderAreaSelection(context);
+            return 0;
+        });
+        baseCommand.then(literal("island")
+                        .then(argument("chunk_cube_size", IntegerArgumentType.integer(4, 64))
                                 .then(argument("distance_limit", IntegerArgumentType.integer(1, 2000))
                                         .executes(context -> {
                                             this.renderSurroundingConnectedMiniChunks(context);
@@ -47,6 +51,15 @@ public class RenderAreaSubCommand extends WikiRendererSubCommand {
                                             this.renderAreaWithArguments(context);
                                             return 0;
                                         }))));
+
+        if (FabricLoader.getInstance().isModLoaded("litematica")) {
+            baseCommand.then(literal("litematica").executes(context -> {
+                this.renderLitematicaSelection(context);
+                return 0;
+            }));
+        }
+
+        return baseCommand;
     }
 
     private void renderAreaSelection(CommandContext<FabricClientCommandSource> context) {
@@ -88,4 +101,26 @@ public class RenderAreaSubCommand extends WikiRendererSubCommand {
         return BlockPos.containing(argument.x().get(pos.x), argument.y().get(pos.y), argument.z().get(pos.z));
     }
 
+    private void renderLitematicaSelection(CommandContext<FabricClientCommandSource> context) {
+        AreaSelection selection = DataManager.getSelectionManager().getCurrentSelection();
+        if (selection == null) {
+            Translate.commandError(context, "no_litematica_selection");
+            return;
+        }
+
+        Box box = selection.getSelectedSubRegionBox();
+        if (box == null) {
+            Translate.commandError(context, "invalid_litematica_selection");
+            return;
+        }
+
+        BlockPos pos1 = box.getPos1();
+        BlockPos pos2 = box.getPos2();
+        if (pos1 == null || pos2 == null) {
+            Translate.commandError(context, "invalid_litematica_selection");
+            return;
+        }
+
+        ScreenSchedulerAndSaver.schedule(new RenderScreen(AreaRenderable.of(pos1, pos2)));
+    }
 }

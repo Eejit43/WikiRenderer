@@ -320,6 +320,8 @@
   "message.wikirenderer.no_block": "You're not looking at a block.",
   "message.wikirenderer.no_entity": "You're not looking at an entity.",
   "message.wikirenderer.incomplete_selection": "You do not have a completed area.",
+  "message.wikirenderer.no_litematica_selection": "You do not have an existing Litematica selection.",
+  "message.wikirenderer.invalid_litematica_selection": "You do not have a valid Litematica selection.",
   "message.wikirenderer.no_valid_chunks": "Couldn't find any blocks in this chunk or any adjacent chunks. Make sure you're standing on a block!",
   "message.wikirenderer.no_such_namespace": "Unknown namespace",
   "message.wikirenderer.scanning_chunks": "Scanning outwards for blocks in %sx%s chunks up to %s blocks. Chunks that have no blocks will be skipped.",

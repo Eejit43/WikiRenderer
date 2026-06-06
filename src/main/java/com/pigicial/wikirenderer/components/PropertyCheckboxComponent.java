@@ -18,6 +18,16 @@ public class PropertyCheckboxComponent extends CheckboxComponent {
     }
 
     @Override
+    public void update(float delta, int mouseX, int mouseY) {
+        Boolean checked = this.property.get();
+        if (checked != this.selected()) {
+            this.checked(checked);
+        }
+
+        super.update(delta, mouseX, mouseY);
+    }
+
+    @Override
     public void onPress(InputWithModifiers input) {
         super.onPress(input);
         property.set(this.selected());

@@ -34,6 +34,29 @@ repositories {
     mavenLocal()
 
     maven { url = "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1" }
+
+    exclusiveContent {
+        forRepository {
+            maven { // conditional-mixin-fabric required by Litematica
+                name = "FallenBreath Maven"
+                url = "https://maven.fallenbreath.me/releases"
+            }
+        }
+        filter {
+            includeGroup "me.fallenbreath"
+        }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Masa-Sakura Maven"
+                url = "https://masa.dy.fi/maven/sakura-ryoko"
+            }
+        }
+        filter {
+            includeGroupAndSubgroups "fi.dy.masa"
+        }
+    }
 }
 
 loom {
@@ -52,6 +75,8 @@ dependencies {
     runtimeOnly("me.djtheredstoner:DevAuth-fabric:${project.devauth_version}")
     compileOnly "maven.modrinth:iris:${project.iris_version}"
     compileOnly "maven.modrinth:entityculling:${project.entity_culling_version}"
+    compileOnly "fi.dy.masa.litematica:litematica-fabric-${project.litematica_version}"
+    compileOnly "fi.dy.masa.malilib:malilib-fabric-${project.malilib_version}"
 }
 
 def gifskiVersion = project.gifski_version
