@@ -30,7 +30,11 @@ public class FileIO {
         try (ForkJoinPool pool = ForkJoinPool.commonPool()) {
             pool.submit(() -> {
                 File imageFile = path.resolveFile("png");
-                imageFile.getParentFile().mkdirs();
+
+                File exportDirectory = imageFile.getParentFile();
+                if (exportDirectory.mkdirs()) {
+                    WikiRenderer.LOGGER.info("Made export directory {} to save file {}", exportDirectory, imageFile.getName());
+                }
 
                 try {
                     image.writeToFile(imageFile);
@@ -55,7 +59,11 @@ public class FileIO {
         try (ForkJoinPool pool = ForkJoinPool.commonPool()) {
             pool.submit(() -> {
                 File textFile = path.resolveFile("txt");
-                textFile.getParentFile().mkdirs();
+
+                File exportDirectory = textFile.getParentFile();
+                if (exportDirectory.mkdirs()) {
+                    WikiRenderer.LOGGER.info("Made export directory {} for file {}", exportDirectory, textFile.getName());
+                }
 
                 try {
                     Files.writeString(

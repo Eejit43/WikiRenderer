@@ -198,7 +198,7 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
         })).margins(Insets.of(5, 0, 0, 0));
 
         WikiRendererUI.text(container, "entity_render_options", true);
-        container.child(this.buildResetEntityOverridesButton(renderable));
+        container.child(this.buildResetEntityOverridesButton(screen, renderable));
 
         if (renderable.liveNonTickableEntity != null) {
             WikiRendererUI.booleanControl(container, this.useLiveEntity, "entity_data.use_live_entities");
@@ -319,7 +319,7 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
         return renderable.hasLivingEntityProperty(living -> Arrays.stream(EquipmentSlot.values()).anyMatch(slot -> living.getItemBySlot(slot).hasFoil()));
     }
 
-    private UIComponent buildResetEntityOverridesButton(EntityRenderable renderable) {
+    private UIComponent buildResetEntityOverridesButton(RenderScreen screen, EntityRenderable renderable) {
         return WikiRendererUI.button(Translate.gui("reset_entity_overrides"), _ -> {
             this.showSurroundingEntities.setToDefault();
             this.surroundingEntitiesRadius.setToDefault();
@@ -349,6 +349,7 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
             EntityRenderable.ENTITY_SPECIFIC_OVERRIDES_BY_ID.clear();
             renderable.selectedEntityId = null;
             renderable.renderStateOverrides = null;
+            screen.guiRebuildScheduled = true;
         });
     }
 

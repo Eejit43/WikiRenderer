@@ -93,7 +93,10 @@ public class GifskiDispatcher {
     }
 
     public static CompletableFuture<File> exportAnimation(ExportPathSpec target, Path sourcePath, AnimationHandler handler) {
-        target.resolveOffset().toFile().mkdirs();
+        File exportDirectory = target.resolveOffset().toFile();
+        if (exportDirectory.mkdirs()) {
+            WikiRenderer.LOGGER.info("Made export directory {}", exportDirectory);
+        }
 
         String gifskiPath = GifskiDispatcher.getGifskiPathMade();
         assert gifskiPath != null : "rur row";

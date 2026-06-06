@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.pigicial.wikirenderer.WikiRenderer;
 import com.pigicial.wikirenderer.mixin.access.NativeImageInvoker;
 import com.pigicial.wikirenderer.render.Renderable;
+import com.pigicial.wikirenderer.render.export.ExportPathSpec;
 import com.pigicial.wikirenderer.render.export.RenderableDispatcher;
 import com.pigicial.wikirenderer.render.particle.ParticleRendererAndLooper;
 import com.pigicial.wikirenderer.screen.RenderScreen;
@@ -22,6 +23,7 @@ import org.joml.Matrix4fStack;
 import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -65,9 +67,15 @@ public interface PropertyBundle {
             screen.exportButton = UIComponents.button(Translate.gui("export"), _ -> screen.captureScheduled = true);
             builder.row.child(screen.exportButton);
 
-            builder.row.child(UIComponents.button(Translate.gui("open_folder"), _ ->
-                    Util.getPlatform().openFile(renderable.getExportPath().resolveOffset().toFile())
-            ));
+            builder.row.child(UIComponents.button(Translate.gui("open_folder"), _ -> {
+                ExportPathSpec defaultExportPath = renderable.getExportPath();
+                ExportPathSpec exportPath = defaultExportPath.differentFileName(renderable.getCustomFileName());
+                File file = exportPath.resolveOffset().toFile();
+                if (file.mkdirs()) {
+                    WikiRenderer.LOGGER.info("Made possible export directory (open file button pressed) {}", file);
+                }
+                Util.getPlatform().openFile(file);
+            }));
 
             if (!GraphicsEnvironment.isHeadless()) {
                 builder.row.child(UIComponents.button(Translate.gui("export_to_clipboard"), _ -> {

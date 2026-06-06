@@ -34,7 +34,11 @@ public final class LiveRenderFFmpegFFmpegAnimationHandler extends FFmpegAnimatio
         super(screen, renderable, framesToRender);
         try {
             Path rendersFolder = ExportPathSpec.exportRoot();
-            rendersFolder.toFile().mkdirs();
+
+            File rendersFolderAsFile = rendersFolder.toFile();
+            if (rendersFolderAsFile.mkdirs()) {
+                WikiRenderer.LOGGER.info("Made renders folder {}", rendersFolderAsFile);
+            }
 
             this.tempData = rendersFolder.resolve(this.framesFolderName + ".mov");
             int exportResolution = renderable.getExportResolution();
@@ -58,7 +62,7 @@ public final class LiveRenderFFmpegFFmpegAnimationHandler extends FFmpegAnimatio
 
         // makes new file each frame
         CompletableFuture<Void> future = RenderableDispatcher.copyTextureIntoImage(texture)
-                .whenComplete((image, t) -> texture.close())
+                .whenComplete((_, _) -> texture.close())
                 .thenAccept(image -> {
                     this.collectedCropData.add(ImageCropper.getCropData(image));
                     try {
@@ -73,7 +77,7 @@ public final class LiveRenderFFmpegFFmpegAnimationHandler extends FFmpegAnimatio
 
         if (--this.remainingAnimationFrames == 0) {
             CompletableFuture.allOf(this.frameFileExportFutures.toArray(CompletableFuture[]::new))
-                    .whenComplete((unused, throwable) -> {
+                    .whenComplete((_, _) -> {
                         try {
                             this.frameFileExportFutures.clear();
                             this.session.close();
@@ -90,7 +94,11 @@ public final class LiveRenderFFmpegFFmpegAnimationHandler extends FFmpegAnimatio
         ExportPathSpec defaultExportPath = this.renderable.getExportPath();
         ExportPathSpec exportPath = defaultExportPath.differentFileName(renderable.getCustomFileName());
 
-        exportPath.resolveOffset().toFile().mkdirs();
+        File exportDirectory = exportPath.resolveOffset().toFile();
+        if (exportDirectory.mkdirs()) {
+            WikiRenderer.LOGGER.info("Made export directory {}", exportDirectory);
+        }
+
         File animationFile = exportPath.resolveFile(format.extension);
 
         String ffmpegPath = FFmpegDispatcher.getResolvedOrFallbackFFmpegPath();
@@ -141,8 +149,11 @@ public final class LiveRenderFFmpegFFmpegAnimationHandler extends FFmpegAnimatio
 
                 int exitCode = process.waitFor();
                 if (exitCode == 0) {
-                    if (tempData.toFile().exists()) {
-                        tempData.toFile().delete();
+                    File tempDataFile = tempData.toFile();
+                    if (tempDataFile.exists()) {
+                        if (tempDataFile.delete()) {
+                            WikiRenderer.LOGGER.info("Deleted temporary live export file {}", tempDataFile);
+                        }
                     }
                     return animationFile;
                 } else {

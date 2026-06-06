@@ -120,7 +120,10 @@ public class FFmpegDispatcher {
     }
 
     public static CompletableFuture<File> exportAnimation(ExportPathSpec target, Path sourcePath, AnimationFormat format, AnimationHandler handler, @Nullable String cropFilter) {
-        target.resolveOffset().toFile().mkdirs();
+        File exportDirectory = target.resolveOffset().toFile();
+        if (exportDirectory.mkdirs()) {
+            WikiRenderer.LOGGER.info("Made export directory {}", exportDirectory);
+        }
 
         String ffmpegPath = FFmpegDispatcher.getResolvedOrFallbackFFmpegPath();
         List<String> args = new ArrayList<>(List.of(new String[]{

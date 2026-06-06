@@ -6,6 +6,7 @@ import com.pigicial.wikirenderer.WikiRenderer;
 import com.pigicial.wikirenderer.property.SerializablePropertyBundle;
 import net.fabricmc.loader.api.FabricLoader;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -44,7 +45,10 @@ public class WikiRendererConfigs {
 
     private static Path getConfigPath(String fileName) {
         Path path = FabricLoader.getInstance().getGameDir().resolve("config").resolve("wikirenderer").resolve(fileName);
-        path.toFile().getParentFile().mkdirs();
+        File directoryFile = path.toFile().getParentFile();
+        if (directoryFile.mkdirs()) {
+            WikiRenderer.LOGGER.info("Made config directory {}", directoryFile);
+        }
         return path;
     }
 }
