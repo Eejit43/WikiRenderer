@@ -784,13 +784,11 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        if (!(this.renderable.getProperties() instanceof DefaultPropertyBundle properties)) {
-            return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
-        }
-
-        if (this.isInViewport(mouseX)) {
-            properties.modifyScale((int) (verticalAmount * Math.max(1, properties.scale.get() * 0.075)));
-            return true;
+        if (this.renderable.getProperties() instanceof DefaultPropertyBundle properties) {
+            if (this.isInViewport(mouseX)) {
+                properties.modifyScale((int) (verticalAmount * Math.max(1, properties.getUsedScale() * 0.075)));
+                return true;
+            }
         }
 
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);

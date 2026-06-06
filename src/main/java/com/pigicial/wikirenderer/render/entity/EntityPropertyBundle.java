@@ -127,6 +127,20 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
     }
 
     @Override
+    public double getUsedScale() {
+        return this.spriteRendering.get() ? spriteScale.get() : super.getUsedScale();
+    }
+
+    @Override
+    public void modifyScale(double amount) {
+        if (this.spriteRendering.get()) {
+            this.spriteScale.modify(amount);
+        } else {
+            super.modifyScale(amount);
+        }
+    }
+
+    @Override
     public void modifyRotation(int amount) {
         if (this.spriteRendering.get()) {
             if (this.allowRotatingWithMouse.get()) {

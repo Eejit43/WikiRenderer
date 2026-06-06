@@ -500,6 +500,9 @@ public class AreaRenderable extends DefaultRenderable<AreaPropertyBundle> implem
         double y = click.y() * scale;
 
         this.selectedEntityId = null;
+        if (click.hasShiftDown()) {
+            return false; // deselection option
+        }
 
         Integer closestEntityId = null;
         double lastDistance = Double.MAX_VALUE;

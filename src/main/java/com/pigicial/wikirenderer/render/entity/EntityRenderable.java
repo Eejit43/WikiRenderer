@@ -694,6 +694,9 @@ public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> im
         double y = click.y() * scale;
 
         this.selectedEntityId = null;
+        if (click.hasShiftDown()) {
+            return false; // deselection option
+        }
 
         Integer closestEntityId = null;
         double lastDistance = Double.MAX_VALUE;

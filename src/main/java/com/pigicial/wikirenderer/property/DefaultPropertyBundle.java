@@ -8,7 +8,6 @@ import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.screen.WikiRendererUI;
 import com.pigicial.wikirenderer.util.Translate;
 import io.wispforest.owo.ui.component.ButtonComponent;
-import io.wispforest.owo.ui.component.UIComponents;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.Insets;
 import net.minecraft.client.Minecraft;
@@ -68,6 +67,10 @@ public class DefaultPropertyBundle implements PropertyBundle {
 
     public double getUsedSlant() {
         return this.slant.get();
+    }
+
+    public double getUsedScale() {
+        return this.scale.get();
     }
 
     public void modifyRotation(int amount) {
