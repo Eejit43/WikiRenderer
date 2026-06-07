@@ -34,9 +34,11 @@ import net.minecraft.world.entity.animal.cow.MushroomCow;
 import net.minecraft.world.entity.animal.equine.Llama;
 import net.minecraft.world.entity.animal.equine.Markings;
 import net.minecraft.world.entity.animal.equine.Variant;
+import net.minecraft.world.entity.animal.feline.CatVariants;
 import net.minecraft.world.entity.animal.fish.Salmon;
 import net.minecraft.world.entity.animal.fish.TropicalFish;
 import net.minecraft.world.entity.animal.fox.Fox;
+import net.minecraft.world.entity.animal.frog.FrogVariants;
 import net.minecraft.world.entity.animal.golem.CopperGolemState;
 import net.minecraft.world.entity.animal.panda.Panda;
 import net.minecraft.world.entity.animal.parrot.Parrot;
@@ -214,13 +216,13 @@ public class EntityTypeSpecificOverrides<S extends EntityRenderState> {
             overrides.registerEnumOverride("collarColor", DyeColor.class, s -> s.collarColor, (s, value) -> s.collarColor = value);
             overrides.registerBooleanOverride("isBaby", s -> s.isBaby, (s, value) -> s.isBaby = value);
 
-            overrides.registerRegistryOverride("variant", Registries.CAT_VARIANT, _ -> null,
+            overrides.registerRegistryOverrideWithFallback("variant", Registries.CAT_VARIANT, _ -> null,
                     (s, value) -> s.texture = value.assetInfo(s.isBaby).texturePath(),
                     (_, s) -> {
                         String fullString = s.assetInfo(false).id().toString();
                         String type = fullString.substring(fullString.lastIndexOf("/") + 1);
                         return OptionalOverride.toDisplayName(type);
-                    });
+                    }, CatVariants.TABBY, false);
         });
 
         registerOverrides(ChickenRenderState.class, overrides -> {
@@ -395,12 +397,12 @@ public class EntityTypeSpecificOverrides<S extends EntityRenderState> {
             overrides.registerAnimationStateOverride("tongueAnimationState", s -> s.tongueAnimationState);
             overrides.registerAnimationStateOverride("swimIdleAnimationState", s -> s.swimIdleAnimationState);
 
-            overrides.registerRegistryOverride("variant", Registries.FROG_VARIANT, s -> null, (s, value) -> {
+            overrides.registerRegistryOverrideWithFallback("variant", Registries.FROG_VARIANT, s -> null, (s, value) -> {
                 s.texture = value.assetInfo().texturePath();
             }, (key, s) -> {
                 String id = s.assetInfo().id().toString();
                 return OptionalOverride.toDisplayName(id.substring(id.lastIndexOf("/") + 1));
-            });
+            }, FrogVariants.TEMPERATE, true);
         });
 
         registerOverrides(GhastRenderState.class, overrides ->

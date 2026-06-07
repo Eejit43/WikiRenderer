@@ -57,6 +57,9 @@ public class RegistryOverride<S extends EntityRenderState, R> extends OptionalOv
 
         this.toString = toString;
         this.value = getDefaultValue();
+        if (this.defaultFallback == null) {
+            this.defaultFallback = getDefaultValue();
+        }
         this.forcedFallback = forcedFallback;
     }
 
