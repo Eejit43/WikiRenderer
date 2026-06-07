@@ -171,15 +171,6 @@
   "gui.wikirenderer.plus_five": "+5",
   "gui.wikirenderer.minus_five": "-5",
 
-  "gui.wikirenderer.block_visibility": "§nBlock Visibility",
-  "gui.wikirenderer.reset_block_and_entity_overrides": "Reset Block & Entity Overrides",
-  "gui.wikirenderer.hide_blocks": "Hide Blocks",
-  "gui.wikirenderer.hide_blocks.tooltip": "Prevents all blocks from rendering.",
-  "gui.wikirenderer.hide_fluids": "Hide Fluids (Rebuilds Mesh)",
-  "gui.wikirenderer.hide_fluids.tooltip": "Prevents all fluids from rendering.",
-  "gui.wikirenderer.hide_beacon_beams": "Hide Beacon Beams",
-  "gui.wikirenderer.hide_beacon_beams.tooltip": "Prevents beacon beams from rendering.",
-
   "gui.wikirenderer.rebuild_mesh": "Rebuild Mesh",
   "gui.wikirenderer.stop_building": "Stop",
   "gui.wikirenderer.mesh_hidden": "Hidden",
@@ -190,6 +181,17 @@
   "gui.wikirenderer.mesh_ready": "Ready",
   "gui.wikirenderer.copy_render_command": "Copy Render Command",
   "gui.wikirenderer.copied_coordinates_command_to_clipboard": "Copied render command to clipboard",
+
+  "gui.wikirenderer.block_visibility": "§nBlock Visibility",
+  "gui.wikirenderer.reset_block_and_entity_overrides": "Reset Block & Entity Overrides",
+  "gui.wikirenderer.hide_blocks": "Hide Blocks",
+  "gui.wikirenderer.hide_blocks.tooltip": "Prevents all blocks from rendering.",
+  "gui.wikirenderer.hide_fluids": "Hide Fluids (Rebuilds Mesh)",
+  "gui.wikirenderer.hide_fluids.tooltip": "Prevents all fluids from rendering.",
+  "gui.wikirenderer.hide_beacon_beams": "Hide Beacon Beams",
+  "gui.wikirenderer.hide_beacon_beams.tooltip": "Prevents beacon beams from rendering.",
+  "gui.wikirenderer.freeze_blocks": "Hide Beacon Beams",
+  "gui.wikirenderer.freeze_blocks.tooltip": "Prevents mesh sections from automatically updating when blocks change in the world.",
 
   "gui.wikirenderer.entity_overrides": "§nEntity Overrides",
   "gui.wikirenderer.screen_render_options": "§nScreen Render Options",
