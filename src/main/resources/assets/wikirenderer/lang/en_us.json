@@ -190,7 +190,7 @@
   "gui.wikirenderer.hide_fluids.tooltip": "Prevents all fluids from rendering.",
   "gui.wikirenderer.hide_beacon_beams": "Hide Beacon Beams",
   "gui.wikirenderer.hide_beacon_beams.tooltip": "Prevents beacon beams from rendering.",
-  "gui.wikirenderer.freeze_blocks": "Hide Beacon Beams",
+  "gui.wikirenderer.freeze_blocks": "Freeze Blocks",
   "gui.wikirenderer.freeze_blocks.tooltip": "Prevents mesh sections from automatically updating when blocks change in the world.",
 
   "gui.wikirenderer.entity_overrides": "§nEntity Overrides",
