@@ -52,13 +52,13 @@ public class FileIO {
         return future;
     }
 
-    public static CompletableFuture<File> saveText(String text, ExportPathSpec path) {
+    public static CompletableFuture<File> saveText(String text, ExportPathSpec path, String extension) {
         CompletableFuture<File> future = new CompletableFuture<>();
 
         TASK_COUNT.incrementAndGet();
         try (ForkJoinPool pool = ForkJoinPool.commonPool()) {
             pool.submit(() -> {
-                File textFile = path.resolveFile("txt");
+                File textFile = path.resolveFile(extension);
 
                 File exportDirectory = textFile.getParentFile();
                 if (exportDirectory.mkdirs()) {
@@ -85,7 +85,11 @@ public class FileIO {
     }
 
     public static void saveTextAndNotify(String text, ExportPathSpec path, RenderScreen renderScreen, String key) {
-        FileIO.saveText(text, path).whenComplete((textFile, _) -> Minecraft.getInstance().execute(() -> renderScreen.notify(
+        saveTextAndNotify(text, path, "txt", renderScreen, key);
+    }
+
+    public static void saveTextAndNotify(String text, ExportPathSpec path, String extension, RenderScreen renderScreen, String key) {
+        FileIO.saveText(text, path, extension).whenComplete((textFile, t) -> Minecraft.getInstance().execute(() -> renderScreen.notify(
                 () -> Util.getPlatform().openFile(textFile),
                 Translate.gui(key),
                 Component.literal(ExportPathSpec.exportRoot().relativize(textFile.toPath()).toString())

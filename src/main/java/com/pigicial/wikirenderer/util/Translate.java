@@ -5,9 +5,11 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
+import org.jetbrains.annotations.Nullable;
 
 public class Translate {
 
@@ -19,6 +21,12 @@ public class Translate {
 
     public static MutableComponent gui(String key, Object... args) {
         return Component.translatable("gui.wikirenderer." + key, args);
+    }
+
+    @Nullable
+    public static MutableComponent guiIfExists(String key, Object... args) {
+        String fullKey = "gui.wikirenderer." + key;
+        return I18n.exists(fullKey) ? Component.translatable(fullKey, args) : null;
     }
 
     public static MutableComponent msg(String key, Object... args) {

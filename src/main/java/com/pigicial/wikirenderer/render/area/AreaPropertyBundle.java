@@ -506,9 +506,6 @@ public class AreaPropertyBundle extends DefaultCroppablePropertyBundle implement
 
             if (this.getPixelsPerBlockResolution() == 4) {
                 WikiRendererUI.booleanControl(container, this.halfPixelOffsetFor4x4, "half_pixel_offset_for_4x4");
-                WikiRendererUI.text(container, "half_pixel_offset_for_4x4_note_1", true);
-                WikiRendererUI.text(container, "half_pixel_offset_for_4x4_note_2", false);
-                WikiRendererUI.text(container, "half_pixel_offset_for_4x4_note_3", false);
             }
         }
     }

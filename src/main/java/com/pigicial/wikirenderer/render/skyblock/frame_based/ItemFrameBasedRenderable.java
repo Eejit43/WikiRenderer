@@ -96,10 +96,10 @@ public class ItemFrameBasedRenderable extends FrameBasedRenderable<TextureData, 
             String profileJsonFile = String.join("\n", this.generateProfileJson());
 
             ExportPathSpec profileDataExportPath = exportPath.filename().isBlank()
-                    ? defaultExportPath.differentFileName("Base64 Data")
-                    : defaultExportPath.differentFileName(exportPath.filename() + " Base64 Data");
+                    ? defaultExportPath.differentFileName("Profile Data")
+                    : defaultExportPath.differentFileName(exportPath.filename() + " Profile Data");
 
-            FileIO.saveTextAndNotify(profileJsonFile, profileDataExportPath, screen, "exported_profile_json_data_as");
+            FileIO.saveTextAndNotify(profileJsonFile, profileDataExportPath, "json", screen, "exported_profile_json_data_as");
         }
     }
 }

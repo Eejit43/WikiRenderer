@@ -5,7 +5,9 @@ import io.wispforest.owo.ui.core.OwoUIGraphics;
 import io.wispforest.owo.ui.core.Size;
 import io.wispforest.owo.ui.core.Sizing;
 import io.wispforest.owo.ui.core.UIComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 public class DynamicComponent extends FlowLayout {
@@ -19,6 +21,16 @@ public class DynamicComponent extends FlowLayout {
         this.displayCondition = displayCondition;
 
         this.child(component);
+    }
+
+    @Override
+    public boolean isInBoundingBox(double x, double y) {
+        return exists && super.isInBoundingBox(x, y);
+    }
+
+    @Override
+    public List<ClientTooltipComponent> tooltip() {
+        return exists ? super.tooltip() : List.of();
     }
 
     @Override

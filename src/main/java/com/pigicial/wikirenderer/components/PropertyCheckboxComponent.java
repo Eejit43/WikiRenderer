@@ -1,6 +1,7 @@
 package com.pigicial.wikirenderer.components;
 
 import com.pigicial.wikirenderer.property.Property;
+import io.wispforest.owo.mixin.ui.access.CheckboxAccessor;
 import io.wispforest.owo.ui.component.CheckboxComponent;
 import io.wispforest.owo.ui.core.Size;
 import net.minecraft.client.input.InputWithModifiers;
@@ -35,7 +36,7 @@ public class PropertyCheckboxComponent extends CheckboxComponent {
 
     @Override
     public void inflate(Size space) {
-        this.setWidth(Math.max(space.width() - 29, 20));
         super.inflate(space);
+        ((CheckboxAccessor) this).owo$getTextWidget().setMaxWidth(Math.max(space.width() - 29, 20));
     }
 }
