@@ -26,7 +26,8 @@ public class PlayerTextureUtils {
 
     public static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(UUID.class, new NullSafeUUIDTypeAdapter())
-            .setPrettyPrinting().create();
+            .setPrettyPrinting()
+            .create();
 
     @Nullable
     public static TextureData getTextureDataFromPlayerHead(ItemStack itemStack) {
@@ -37,7 +38,7 @@ public class PlayerTextureUtils {
         if (data != null) return data;
 
         PlayerSkinRenderCache.RenderInfo renderInfo = Minecraft.getInstance().playerSkinRenderCache().getOrDefault(profile);
-        return PlayerTextureUtils.getTextureDataFromGameProfile(renderInfo.gameProfile());
+        return getTextureDataFromGameProfile(renderInfo.gameProfile());
     }
 
     @Nullable

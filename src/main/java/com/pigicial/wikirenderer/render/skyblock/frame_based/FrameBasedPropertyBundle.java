@@ -80,7 +80,7 @@ public class FrameBasedPropertyBundle<S, R extends Renderable<P>, P extends Prop
 
     @Override
     public void applyToViewMatrix(Renderable<?> ignored, Matrix4fStack modelViewStack) {
-        this.actualProperties.applyToViewMatrix(this.frameBasedRenderable.currentFrame.renderable(), modelViewStack);
+        this.actualProperties.applyToViewMatrix(this.frameBasedRenderable.getOrUpdateRenderable(), modelViewStack);
     }
 
     @Override
@@ -159,22 +159,22 @@ public class FrameBasedPropertyBundle<S, R extends Renderable<P>, P extends Prop
             }
         }
 
-        this.actualProperties.buildMainGUIControls(frameBasedRenderable.currentFrame.renderable(), screen, container);
+        this.actualProperties.buildMainGUIControls(frameBasedRenderable.getOrUpdateRenderable(), screen, container);
     }
 
     @Override
     public void buildRenderOptionGUIControls(Renderable<?> renderable, RenderScreen screen, FlowLayout container) {
-        this.actualProperties.buildRenderOptionGUIControls(this.frameBasedRenderable.currentFrame.renderable(), screen, container);
+        this.actualProperties.buildRenderOptionGUIControls(this.frameBasedRenderable.getOrUpdateRenderable(), screen, container);
     }
 
     @Override
     public int getExportResolution(Renderable<?> ignored) {
-        return this.actualProperties.getExportResolution(this.frameBasedRenderable.currentFrame.renderable());
+        return this.actualProperties.getExportResolution(this.frameBasedRenderable.getOrUpdateRenderable());
     }
 
     @Override
     public void buildExportResolutionGUIControls(Renderable<?> renderable, RenderScreen screen, FlowLayout container) {
-        this.actualProperties.buildExportResolutionGUIControls(this.frameBasedRenderable.currentFrame.renderable(), screen, container);
+        this.actualProperties.buildExportResolutionGUIControls(this.frameBasedRenderable.getOrUpdateRenderable(), screen, container);
     }
 
     @Override

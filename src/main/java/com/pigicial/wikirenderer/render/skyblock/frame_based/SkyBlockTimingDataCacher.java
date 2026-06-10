@@ -21,29 +21,32 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class SkyBlockTimingDataCacher {
 
-    public static SkyBlockTimingDataCacher INSTANCE = new SkyBlockTimingDataCacher();
+    private static final EquipmentSlot[] EQUIPMENT_SLOTS = EquipmentSlot.values();
+    private static final SkyBlockTimingDataCacher INSTANCE = new SkyBlockTimingDataCacher();
 
     public static SkyBlockTimingDataCacher getInstance() {
         return INSTANCE;
     }
 
     private final Cache<UUID, HeadTexturesTiming> textureData = CacheBuilder.newBuilder()
-            .expireAfterAccess(4, TimeUnit.MINUTES)
+            .expireAfterAccess(3, TimeUnit.MINUTES)
             .build();
-    private final Map<GameProfile, InterpolatedTimings> combinedTextureAnimationFrameTimings = new HashMap<>();
+    private final Cache<GameProfile, InterpolatedTimings> combinedTextureAnimationFrameTimings = CacheBuilder.newBuilder()
+            .expireAfterAccess(3, TimeUnit.MINUTES)
+            .build();
 
     private final Cache<UUID, DyeColorTiming> dyeColorData = CacheBuilder.newBuilder()
-            .expireAfterAccess(4, TimeUnit.MINUTES)
+            .expireAfterAccess(3, TimeUnit.MINUTES)
             .build();
-    private final Map<DyedArmorColorData, InterpolatedTimings> combinedDyeColorAnimationFrameTimings = new HashMap<>();
+    private final Cache<DyedArmorColorData, InterpolatedTimings> combinedDyeColorAnimationFrameTimings = CacheBuilder.newBuilder()
+            .expireAfterAccess(3, TimeUnit.MINUTES)
+            .build();
 
     @Nullable
     private TextureData textureMarkedAsFirstForNextRender = null;
@@ -59,7 +62,7 @@ public class SkyBlockTimingDataCacher {
         for (Entity entity : ((LevelAccessor) level).wikirenderer$getEntities().getAll()) {
             if (!(entity instanceof LivingEntity livingEntity)) continue;
 
-            for (EquipmentSlot slot : EquipmentSlot.values()) {
+            for (EquipmentSlot slot : EQUIPMENT_SLOTS) {
                 ItemStack item = livingEntity.getItemBySlot(slot);
                 TextureData textureData = PlayerTextureUtils.getTextureDataFromPlayerHead(item);
                 if (textureData != null) {
@@ -109,10 +112,10 @@ public class SkyBlockTimingDataCacher {
     public InterpolatedTimings getTextureTimings(List<FrameData<TextureData, ItemRenderable, ItemRenderablePropertyBundle>> dataSet, int framesCount) {
         for (int i = 0, dataSetSize = dataSet.size(); i < Math.min(dataSetSize, framesCount); i++) {
             FrameData<TextureData, ItemRenderable, ItemRenderablePropertyBundle> data = dataSet.get(i);
-            InterpolatedTimings possibleTimings = this.combinedTextureAnimationFrameTimings.get(data.sourceData().profile());
+            InterpolatedTimings possibleTimings = this.combinedTextureAnimationFrameTimings.getIfPresent(data.sourceData().profile());
             if (possibleTimings != null) {
                 if (possibleTimings.getFrameCount() < framesCount) {
-                    this.combinedTextureAnimationFrameTimings.remove(data.sourceData().profile());
+                    this.combinedTextureAnimationFrameTimings.invalidate(data.sourceData().profile());
                 } else if (possibleTimings.getFrameCount() == framesCount) {
                     return possibleTimings;
                 }
@@ -127,10 +130,10 @@ public class SkyBlockTimingDataCacher {
     public InterpolatedTimings getColorTimings(List<FrameData<DyedArmorColorData, EntityRenderable, EntityPropertyBundle>> dataSet, int framesCount) {
         for (int i = 0, dataSetSize = dataSet.size(); i < Math.min(dataSetSize, framesCount); i++) {
             FrameData<DyedArmorColorData, EntityRenderable, EntityPropertyBundle> data = dataSet.get(i);
-            InterpolatedTimings possibleTimings = this.combinedDyeColorAnimationFrameTimings.get(data.sourceData());
+            InterpolatedTimings possibleTimings = this.combinedDyeColorAnimationFrameTimings.getIfPresent(data.sourceData());
             if (possibleTimings != null) {
                 if (possibleTimings.getFrameCount() < framesCount) {
-                    this.combinedDyeColorAnimationFrameTimings.remove(data.sourceData());
+                    this.combinedDyeColorAnimationFrameTimings.invalidate(data.sourceData());
                 } else if (possibleTimings.getFrameCount() == framesCount) {
                     return possibleTimings;
                 }
@@ -145,7 +148,7 @@ public class SkyBlockTimingDataCacher {
     public void reset() {
         textureData.invalidateAll();
         dyeColorData.invalidateAll();
-        combinedTextureAnimationFrameTimings.clear();
-        combinedDyeColorAnimationFrameTimings.clear();
+        combinedTextureAnimationFrameTimings.invalidateAll();
+        combinedDyeColorAnimationFrameTimings.invalidateAll();
     }
 }

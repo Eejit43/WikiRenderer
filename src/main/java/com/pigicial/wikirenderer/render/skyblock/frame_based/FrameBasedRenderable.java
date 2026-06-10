@@ -27,6 +27,8 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
     protected List<FrameData<S, R, P>> currentDataSet;
     private InterpolatedTimings timingData;
 
+    protected int lastUpdatedIndex = -1;
+    protected R renderable;
     protected FrameData<S, R, P> currentFrame;
     protected int currentIndex;
 
@@ -45,8 +47,7 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
 
         TreeMap<Integer, S> data = this.dataSourceSupplier.get();
         for (Map.Entry<Integer, S> entry : data.entrySet()) {
-            R generatedRenderable = this.createRenderableFromData(entry.getValue());
-            currentDataSet.add(new FrameData<>(entry.getKey(), entry.getValue(), generatedRenderable));
+            currentDataSet.add(new FrameData<>(entry.getKey(), entry.getValue()));
         }
         lastFetchRawFrameCount = data.size();
 
@@ -71,6 +72,9 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
 
         if (this.currentFrame == null) {
             this.currentFrame = currentDataSet.getFirst();
+        }
+        if (renderable == null) {
+            this.getOrUpdateRenderable();
         }
 
         // get animation ranges
@@ -148,8 +152,6 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
         }
     }
 
-    protected abstract R createRenderableFromData(S data);
-
     public abstract ItemComponent createItemComponentForPreview(FrameData<S, R, P> frameData);
 
     protected abstract boolean sourceDataMatches(S data1, S data2);
@@ -162,9 +164,25 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
 
     protected abstract List<String> generateWikiTextFile(List<FrameData<S, R, P>> currentDataSet);
 
+    protected abstract R createBlankRenderable();
+
+    protected abstract void updateRenderable(R renderable, S sourceData);
+
+    protected R getOrUpdateRenderable() {
+        if (this.lastUpdatedIndex != currentIndex) {
+            if (renderable == null) {
+                renderable = this.createBlankRenderable();
+            }
+            this.updateRenderable(renderable, currentFrame.sourceData());
+            this.lastUpdatedIndex = currentIndex;
+        }
+
+        return this.renderable;
+    }
+
     @Override
     public void onScreenHandle(RenderScreen renderScreen, GuiGraphicsExtractor graphics, float tickDelta) {
-        currentFrame.renderable().onScreenHandle(renderScreen, graphics, tickDelta);
+        this.getOrUpdateRenderable().onScreenHandle(renderScreen, graphics, tickDelta);
         if (timingData == null && renderScreen.exportAnimationButton != null) {
             renderScreen.exportAnimationButton.active = false;
         }
@@ -204,7 +222,7 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
     }
 
     private void next(RenderScreen screen) {
-        this.currentFrame.renderable().dispose();
+        this.getOrUpdateRenderable().dispose();
 
         if (currentIndex + 1 >= this.currentDataSet.size()) {
             renderActive = false;
@@ -241,27 +259,27 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
 
     @Override
     public void setupLighting() {
-        this.currentFrame.renderable().setupLighting();
+        this.getOrUpdateRenderable().setupLighting();
     }
 
     @Override
     public void prepare() {
-        this.currentFrame.renderable().prepare();
+        this.getOrUpdateRenderable().prepare();
     }
 
     @Override
     public void cleanUp() {
-        this.currentFrame.renderable().cleanUp();
+        this.getOrUpdateRenderable().cleanUp();
     }
 
     @Override
     public void emitVerticesThenDraw(RenderScreen renderScreen, Matrix4fStack modelViewStack, PoseStack poseStack, float tickDelta, long timeSinceCreationMs) {
-        this.currentFrame.renderable().emitVerticesThenDraw(renderScreen, modelViewStack, poseStack, tickDelta, timeSinceCreationMs);
+        this.getOrUpdateRenderable().emitVerticesThenDraw(renderScreen, modelViewStack, poseStack, tickDelta, timeSinceCreationMs);
     }
 
     @Override
     public void drawSubmittedRenderFeatures() {
-        this.currentFrame.renderable().drawSubmittedRenderFeatures();
+        this.getOrUpdateRenderable().drawSubmittedRenderFeatures();
     }
 
     @Override
@@ -271,7 +289,7 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
 
     @Override
     public ExportPathSpec getExportPath() {
-        return this.currentFrame.renderable().getExportPath();
+        return this.getOrUpdateRenderable().getExportPath();
     }
 
     @Override

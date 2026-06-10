@@ -29,7 +29,7 @@ public class ItemRenderable extends ItemBasedRenderable<ItemRenderablePropertyBu
 
     private static final ItemStackRenderState RENDER_STATE = new ItemStackRenderState();
 
-    public final ItemStack stack;
+    public ItemStack stack;
     private Map<String, TextureData> textureData = null;
 
     private DyedItemColor actualDyedItemColor = null;

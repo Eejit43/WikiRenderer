@@ -16,6 +16,7 @@ import com.pigicial.wikirenderer.util.NullSafeUUIDTypeAdapter;
 import io.wispforest.owo.ui.component.ItemComponent;
 import io.wispforest.owo.ui.component.UIComponents;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -32,14 +33,8 @@ public class ItemFrameBasedRenderable extends FrameBasedRenderable<TextureData, 
     }
 
     @Override
-    protected ItemRenderable createRenderableFromData(TextureData data) {
-        ItemStack item = PlayerTextureUtils.createPlayerHead(data.profile());
-        return new ItemRenderable(item);
-    }
-
-    @Override
     public ItemComponent createItemComponentForPreview(FrameData<TextureData, ItemRenderable, ItemRenderablePropertyBundle> frameData) {
-        return UIComponents.item(frameData.renderable().stack);
+        return UIComponents.item(PlayerTextureUtils.createPlayerHead(frameData.sourceData().profile()));
     }
 
     @Override
@@ -49,13 +44,13 @@ public class ItemFrameBasedRenderable extends FrameBasedRenderable<TextureData, 
 
     @Override
     protected TextureData getMatchingFirstMarkedData() {
-        return SkyBlockTimingDataCacher.INSTANCE.getMarkedFirstTexture();
+        return SkyBlockTimingDataCacher.getInstance().getMarkedFirstTexture();
     }
 
     @Override
     @NotNull
     public InterpolatedTimings getTimings(List<FrameData<TextureData, ItemRenderable, ItemRenderablePropertyBundle>> currentDataSet, int framesCount) {
-        return SkyBlockTimingDataCacher.INSTANCE.getTextureTimings(currentDataSet, framesCount);
+        return SkyBlockTimingDataCacher.getInstance().getTextureTimings(currentDataSet, framesCount);
     }
 
     @Override
@@ -70,6 +65,16 @@ public class ItemFrameBasedRenderable extends FrameBasedRenderable<TextureData, 
                 String.join(";\n", hashes),
                 "}}"
         );
+    }
+
+    @Override
+    protected ItemRenderable createBlankRenderable() {
+        return new ItemRenderable(new ItemStack(Items.PLAYER_HEAD));
+    }
+
+    @Override
+    protected void updateRenderable(ItemRenderable renderable, TextureData sourceData) {
+        renderable.stack = PlayerTextureUtils.createPlayerHead(sourceData.profile());
     }
 
     // ic request

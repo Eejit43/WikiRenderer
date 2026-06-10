@@ -260,9 +260,9 @@ public class EntityRenderable extends DefaultRenderable<EntityPropertyBundle> im
                 }
             }
 
-            EntityVertexBounds vertexBounds = EntityRenderBoundsUtil.getBounds(state, CameraUtil.createRenderState(this), 0, 0, 0);
 
             if (cachedCenterOffset == null || cachedScaleMultiplier == null) {
+                EntityVertexBounds vertexBounds = EntityRenderBoundsUtil.getBounds(state, CameraUtil.createRenderState(this), 0, 0, 0);
                 AABB regularBounds = entity.getBoundingBox();
                 if (vertexBounds == null) {
                     cachedCenterOffset = new Vec3(0, 0, 0);

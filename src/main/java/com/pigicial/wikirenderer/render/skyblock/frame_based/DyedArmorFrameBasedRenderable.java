@@ -24,15 +24,8 @@ public class DyedArmorFrameBasedRenderable extends FrameBasedRenderable<DyedArmo
     }
 
     @Override
-    protected EntityRenderable createRenderableFromData(DyedArmorColorData data) {
-        GameProfile profile = new GameProfile(new UUID(0, 0), "Steve");
-        RenderablePlayerEntity entity = new RenderablePlayerEntity(profile, ProfileFetchMode.UUID);
-
-        entity.setItemSlot(EquipmentSlot.HEAD, this.createItem(Items.LEATHER_HELMET, data.helmetColor()));
-        entity.setItemSlot(EquipmentSlot.CHEST, this.createItem(Items.LEATHER_CHESTPLATE, data.chestplateColor()));
-        entity.setItemSlot(EquipmentSlot.LEGS, this.createItem(Items.LEATHER_LEGGINGS, data.leggingsColor()));
-        entity.setItemSlot(EquipmentSlot.FEET, this.createItem(Items.LEATHER_BOOTS, data.bootsColor()));
-        return new EntityRenderable(null, entity);
+    protected EntityRenderable getOrUpdateRenderable() {
+        return super.getOrUpdateRenderable();
     }
 
     @Override
@@ -53,7 +46,7 @@ public class DyedArmorFrameBasedRenderable extends FrameBasedRenderable<DyedArmo
     @Override
     @NotNull
     public InterpolatedTimings getTimings(List<FrameData<DyedArmorColorData, EntityRenderable, EntityPropertyBundle>> currentDataSet, int framesCount) {
-        return SkyBlockTimingDataCacher.INSTANCE.getColorTimings(currentDataSet, framesCount);
+        return SkyBlockTimingDataCacher.getInstance().getColorTimings(currentDataSet, framesCount);
     }
 
     @Override
@@ -83,6 +76,22 @@ public class DyedArmorFrameBasedRenderable extends FrameBasedRenderable<DyedArmo
                 "}}",
                 String.join(" → ", helmetColorDisplays)
         );
+    }
+
+    @Override
+    protected EntityRenderable createBlankRenderable() {
+        GameProfile profile = new GameProfile(new UUID(0, 0), "Steve");
+        return new EntityRenderable(null, new RenderablePlayerEntity(profile, ProfileFetchMode.UUID));
+    }
+
+    @Override
+    protected void updateRenderable(EntityRenderable renderable, DyedArmorColorData sourceData) {
+        RenderablePlayerEntity entity = (RenderablePlayerEntity) renderable.getUsedEntity();
+
+        entity.setItemSlot(EquipmentSlot.HEAD, this.createItem(Items.LEATHER_HELMET, sourceData.helmetColor()));
+        entity.setItemSlot(EquipmentSlot.CHEST, this.createItem(Items.LEATHER_CHESTPLATE, sourceData.chestplateColor()));
+        entity.setItemSlot(EquipmentSlot.LEGS, this.createItem(Items.LEATHER_LEGGINGS, sourceData.leggingsColor()));
+        entity.setItemSlot(EquipmentSlot.FEET, this.createItem(Items.LEATHER_BOOTS, sourceData.bootsColor()));
     }
 
     private void addColorEntryIfNecessary(Map<String, List<String>> map, String key, String text) {
