@@ -33,7 +33,7 @@ public class ItemFrameBasedRenderable extends FrameBasedRenderable<TextureData, 
     }
 
     @Override
-    public ItemComponent createItemComponentForPreview(FrameData<TextureData, ItemRenderable, ItemRenderablePropertyBundle> frameData) {
+    public ItemComponent createItemComponentForPreview(FrameData<TextureData> frameData) {
         return UIComponents.item(PlayerTextureUtils.createPlayerHead(frameData.sourceData().profile()));
     }
 
@@ -49,14 +49,14 @@ public class ItemFrameBasedRenderable extends FrameBasedRenderable<TextureData, 
 
     @Override
     @NotNull
-    public InterpolatedTimings getTimings(List<FrameData<TextureData, ItemRenderable, ItemRenderablePropertyBundle>> currentDataSet, int framesCount) {
+    public InterpolatedTimings getTimings(List<FrameData<TextureData>> currentDataSet, int framesCount) {
         return SkyBlockTimingDataCacher.getInstance().getTextureTimings(currentDataSet, framesCount);
     }
 
     @Override
-    protected List<String> generateWikiTextFile(List<FrameData<TextureData, ItemRenderable, ItemRenderablePropertyBundle>> currentDataSet) {
+    protected List<String> generateWikiTextFile(List<FrameData<TextureData>> currentDataSet) {
         List<String> hashes = new ArrayList<>();
-        for (FrameData<TextureData, ItemRenderable, ItemRenderablePropertyBundle> frame : currentDataSet) {
+        for (FrameData<TextureData> frame : currentDataSet) {
             String hash = frame.sourceData().payload().textures().get(MinecraftProfileTexture.Type.SKIN).getHash();
             hashes.add(hash);
         }
@@ -80,7 +80,7 @@ public class ItemFrameBasedRenderable extends FrameBasedRenderable<TextureData, 
     // ic request
     protected List<String> generateProfileJson() {
         List<String> lines = new ArrayList<>();
-        for (FrameData<TextureData, ItemRenderable, ItemRenderablePropertyBundle> frame : currentDataSet) {
+        for (FrameData<TextureData> frame : currentDataSet) {
             GameProfile profile = frame.sourceData().profile();
             lines.add(" " + GSON.toJson(profile));
         }

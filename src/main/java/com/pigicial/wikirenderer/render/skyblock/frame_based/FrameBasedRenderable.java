@@ -24,12 +24,12 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
     private final FrameBasedPropertyBundle<S, R, P> propertyBundle;
 
     protected int lastFetchRawFrameCount;
-    protected List<FrameData<S, R, P>> currentDataSet;
+    protected List<FrameData<S>> currentDataSet;
     private InterpolatedTimings timingData;
 
     protected int lastUpdatedIndex = -1;
     protected R renderable;
-    protected FrameData<S, R, P> currentFrame;
+    protected FrameData<S> currentFrame;
     protected int currentIndex;
 
     private boolean renderActive;
@@ -51,12 +51,12 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
         }
         lastFetchRawFrameCount = data.size();
 
-        FrameData<S, R, P> firstMarkedFrame = currentDataSet.getFirst();
+        FrameData<S> firstMarkedFrame = currentDataSet.getFirst();
         S matchingFirstMarkedData = this.getMatchingFirstMarkedData();
 
         if (matchingFirstMarkedData != null) {
             for (int frameIndex = 0, currentDataSetSize = currentDataSet.size(); frameIndex < currentDataSetSize; frameIndex++) {
-                FrameData<S, R, P> frameData = currentDataSet.get(frameIndex);
+                FrameData<S> frameData = currentDataSet.get(frameIndex);
                 if (this.sourceDataMatches(frameData.sourceData(), matchingFirstMarkedData)) {
                     // WikiRenderer.LOGGER.info("Matching first frame is {}", frameIndex);
                     firstMarkedFrame = frameData;
@@ -81,7 +81,7 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
         List<int[]> subAnimationsRanges = new ArrayList<>();
         int lastMatchingIndex = 0;
         for (int i = 0, currentDataSetSize = currentDataSet.size(); i < currentDataSetSize; i++) {
-            FrameData<S, R, P> frameData = currentDataSet.get(i);
+            FrameData<S> frameData = currentDataSet.get(i);
             if (sourceDataMatches(frameData.sourceData(), firstMarkedFrame.sourceData())) {
                 if (i != 0) {
                     subAnimationsRanges.add(new int[]{lastMatchingIndex, i});
@@ -125,7 +125,7 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
             int to = from + longestLoopFrameCount;
 
             for (int i = from; i < to; i++) {
-                FrameData<S, R, P> frameData = currentDataSet.get(i);
+                FrameData<S> frameData = currentDataSet.get(i);
                 int animationIndex = i % longestLoopFrameCount;
 
                 int frameDuration;
@@ -152,17 +152,17 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
         }
     }
 
-    public abstract ItemComponent createItemComponentForPreview(FrameData<S, R, P> frameData);
+    public abstract ItemComponent createItemComponentForPreview(FrameData<S> frameData);
 
     protected abstract boolean sourceDataMatches(S data1, S data2);
 
     @NotNull
-    protected abstract InterpolatedTimings getTimings(List<FrameData<S, R, P>> currentDataSet, int framesCount);
+    protected abstract InterpolatedTimings getTimings(List<FrameData<S>> currentDataSet, int framesCount);
 
     @Nullable
     protected abstract S getMatchingFirstMarkedData();
 
-    protected abstract List<String> generateWikiTextFile(List<FrameData<S, R, P>> currentDataSet);
+    protected abstract List<String> generateWikiTextFile(List<FrameData<S>> currentDataSet);
 
     protected abstract R createBlankRenderable();
 
@@ -253,7 +253,7 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
         return timingData;
     }
 
-    public List<FrameData<S, R, P>> getCurrentDataSet() {
+    public List<FrameData<S>> getCurrentDataSet() {
         return currentDataSet;
     }
 

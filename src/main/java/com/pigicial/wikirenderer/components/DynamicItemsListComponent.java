@@ -33,10 +33,10 @@ public class DynamicItemsListComponent<S, R extends Renderable<P>, P extends Pro
     }
 
     private void update() {
-        List<FrameData<S, R, P>> dataSet = frameBasedRenderable.getCurrentDataSet();
+        List<FrameData<S>> dataSet = frameBasedRenderable.getCurrentDataSet();
         if (dataSet.size() != lastDataSetSize) {
             List<ItemComponent> items = new ArrayList<>();
-            for (FrameData<S, R, P> frame : dataSet) {
+            for (FrameData<S> frame : dataSet) {
                 items.add(this.frameBasedRenderable.createItemComponentForPreview(frame));
             }
             this.clearChildren();

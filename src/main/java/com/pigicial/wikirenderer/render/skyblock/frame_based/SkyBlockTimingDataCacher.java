@@ -4,10 +4,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.mojang.authlib.GameProfile;
 import com.pigicial.wikirenderer.mixin.access.LevelAccessor;
-import com.pigicial.wikirenderer.render.entity.EntityPropertyBundle;
-import com.pigicial.wikirenderer.render.entity.EntityRenderable;
-import com.pigicial.wikirenderer.render.item.ItemRenderable;
-import com.pigicial.wikirenderer.render.item.ItemRenderablePropertyBundle;
 import com.pigicial.wikirenderer.textures.PlayerTextureUtils;
 import com.pigicial.wikirenderer.textures.TextureData;
 import io.wispforest.owo.ui.event.ClientRenderCallback;
@@ -109,9 +105,9 @@ public class SkyBlockTimingDataCacher {
         return this.textureMarkedAsFirstForNextRender;
     }
 
-    public InterpolatedTimings getTextureTimings(List<FrameData<TextureData, ItemRenderable, ItemRenderablePropertyBundle>> dataSet, int framesCount) {
+    public InterpolatedTimings getTextureTimings(List<FrameData<TextureData>> dataSet, int framesCount) {
         for (int i = 0, dataSetSize = dataSet.size(); i < Math.min(dataSetSize, framesCount); i++) {
-            FrameData<TextureData, ItemRenderable, ItemRenderablePropertyBundle> data = dataSet.get(i);
+            FrameData<TextureData> data = dataSet.get(i);
             InterpolatedTimings possibleTimings = this.combinedTextureAnimationFrameTimings.getIfPresent(data.sourceData().profile());
             if (possibleTimings != null) {
                 if (possibleTimings.getFrameCount() < framesCount) {
@@ -127,9 +123,9 @@ public class SkyBlockTimingDataCacher {
         return timings;
     }
 
-    public InterpolatedTimings getColorTimings(List<FrameData<DyedArmorColorData, EntityRenderable, EntityPropertyBundle>> dataSet, int framesCount) {
+    public InterpolatedTimings getColorTimings(List<FrameData<DyedArmorColorData>> dataSet, int framesCount) {
         for (int i = 0, dataSetSize = dataSet.size(); i < Math.min(dataSetSize, framesCount); i++) {
-            FrameData<DyedArmorColorData, EntityRenderable, EntityPropertyBundle> data = dataSet.get(i);
+            FrameData<DyedArmorColorData> data = dataSet.get(i);
             InterpolatedTimings possibleTimings = this.combinedDyeColorAnimationFrameTimings.getIfPresent(data.sourceData());
             if (possibleTimings != null) {
                 if (possibleTimings.getFrameCount() < framesCount) {

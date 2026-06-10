@@ -24,12 +24,7 @@ public class DyedArmorFrameBasedRenderable extends FrameBasedRenderable<DyedArmo
     }
 
     @Override
-    protected EntityRenderable getOrUpdateRenderable() {
-        return super.getOrUpdateRenderable();
-    }
-
-    @Override
-    public ItemComponent createItemComponentForPreview(FrameData<DyedArmorColorData, EntityRenderable, EntityPropertyBundle> frameData) {
+    public ItemComponent createItemComponentForPreview(FrameData<DyedArmorColorData> frameData) {
         return UIComponents.item(this.createItem(Items.LEATHER_HELMET, frameData.sourceData().helmetColor()));
     }
 
@@ -45,16 +40,16 @@ public class DyedArmorFrameBasedRenderable extends FrameBasedRenderable<DyedArmo
 
     @Override
     @NotNull
-    public InterpolatedTimings getTimings(List<FrameData<DyedArmorColorData, EntityRenderable, EntityPropertyBundle>> currentDataSet, int framesCount) {
+    public InterpolatedTimings getTimings(List<FrameData<DyedArmorColorData>> currentDataSet, int framesCount) {
         return SkyBlockTimingDataCacher.getInstance().getColorTimings(currentDataSet, framesCount);
     }
 
     @Override
-    protected List<String> generateWikiTextFile(List<FrameData<DyedArmorColorData, EntityRenderable, EntityPropertyBundle>> currentDataSet) {
+    protected List<String> generateWikiTextFile(List<FrameData<DyedArmorColorData>> currentDataSet) {
         List<String> helmetColorDisplays = new ArrayList<>();
         Map<String, List<String>> pieceMappings = new HashMap<>();
 
-        for (FrameData<DyedArmorColorData, EntityRenderable, EntityPropertyBundle> frame : currentDataSet) {
+        for (FrameData<DyedArmorColorData> frame : currentDataSet) {
             int helmetColor = frame.sourceData().helmetColor();
             String helmetColorDisplayText = "{{Color Display|" + String.format("%06x", helmetColor & 0xFFFFFF) + "}}";
             if (helmetColorDisplays.isEmpty() || !helmetColorDisplays.getLast().equals(helmetColorDisplayText)) {
