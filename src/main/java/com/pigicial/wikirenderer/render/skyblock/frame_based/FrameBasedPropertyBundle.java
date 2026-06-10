@@ -5,6 +5,7 @@ import com.pigicial.wikirenderer.property.*;
 import com.pigicial.wikirenderer.render.Renderable;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.screen.WikiRendererUI;
+import com.pigicial.wikirenderer.util.ClipboardUtil;
 import com.pigicial.wikirenderer.util.Translate;
 import io.wispforest.owo.ui.component.ButtonComponent;
 import io.wispforest.owo.ui.container.FlowLayout;
@@ -13,9 +14,6 @@ import io.wispforest.owo.ui.core.Sizing;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.MutableComponent;
 import org.joml.Matrix4fStack;
-
-import java.awt.*;
-import java.awt.datatransfer.StringSelection;
 
 public class FrameBasedPropertyBundle<S, R extends Renderable<P>, P extends PropertyBundle> extends DefaultCroppablePropertyBundle {
 
@@ -133,14 +131,13 @@ public class FrameBasedPropertyBundle<S, R extends Renderable<P>, P extends Prop
             WikiRendererUI.booleanControl(container, ITEM_EXPORT_PROFILE_DATA, "export_profile_data");
         }
 
-        if (!GraphicsEnvironment.isHeadless()) {
+        if (ClipboardUtil.hasClipboardAccess()) {
             try (WikiRendererUI.RowBuilder builder = WikiRendererUI.autoNewLineRow(container)) {
                 ButtonComponent copyAnimationDataButton = WikiRendererUI.button(Translate.gui("copy_animation_data"), _ -> {
                     screen.notify(Translate.gui("copied_animation_data_to_clipboard"));
 
                     String text = String.join("\n", frameBasedRenderable.generateWikiTextFile(frameBasedRenderable.currentDataSet));
-                    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), (_, _) -> {
-                    });
+                    ClipboardUtil.setClipboard(text);
                 });
                 copyAnimationDataButton.margins(Insets.bottom(3));
                 builder.row.child(copyAnimationDataButton);
@@ -150,8 +147,7 @@ public class FrameBasedPropertyBundle<S, R extends Renderable<P>, P extends Prop
                         screen.notify(Translate.gui("copied_profile_data_to_clipboard"));
 
                         String text = String.join("\n", itemFrameBasedRenderable.generateProfileJson());
-                        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), (_, _) -> {
-                        });
+                        ClipboardUtil.setClipboard(text);
                     });
                     copyProfilesButton.margins(Insets.bottom(9));
                     builder.row.child(copyProfilesButton);

@@ -9,6 +9,7 @@ import com.pigicial.wikirenderer.render.export.RenderableDispatcher;
 import com.pigicial.wikirenderer.render.particle.ParticleRendererAndLooper;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.screen.WikiRendererUI;
+import com.pigicial.wikirenderer.util.ClipboardUtil;
 import com.pigicial.wikirenderer.util.ImageTransferable;
 import com.pigicial.wikirenderer.util.Translate;
 import io.wispforest.owo.ui.component.TextBoxComponent;
@@ -77,7 +78,7 @@ public interface PropertyBundle {
                 Util.getPlatform().openFile(file);
             }));
 
-            if (!GraphicsEnvironment.isHeadless()) {
+            if (ClipboardUtil.hasClipboardAccess()) {
                 builder.row.child(UIComponents.button(Translate.gui("export_to_clipboard"), _ -> {
                     screen.notify(Translate.gui("copied_to_clipboard"));
 
@@ -91,7 +92,7 @@ public interface PropertyBundle {
                                     ((NativeImageInvoker) (Object) image).wikirenderer$write(channel);
 
                                     ImageTransferable transferable = new ImageTransferable(javax.imageio.ImageIO.read(new ByteArrayInputStream(stream.toByteArray())));
-                                    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(transferable, transferable);
+                                    ClipboardUtil.setClipboard(transferable);
                                 } catch (IOException e) {
                                     WikiRenderer.LOGGER.error("mfw", e);
                                 }

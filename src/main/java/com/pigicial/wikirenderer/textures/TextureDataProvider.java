@@ -7,6 +7,7 @@ import com.pigicial.wikirenderer.render.item.ItemRenderable;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.screen.ScreenSchedulerAndSaver;
 import com.pigicial.wikirenderer.screen.WikiRendererUI;
+import com.pigicial.wikirenderer.util.ClipboardUtil;
 import com.pigicial.wikirenderer.util.Translate;
 import io.wispforest.owo.ui.component.UIComponents;
 import io.wispforest.owo.ui.container.FlowLayout;
@@ -17,8 +18,6 @@ import net.minecraft.util.Util;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
-import java.awt.datatransfer.StringSelection;
 import java.util.Map;
 
 public interface TextureDataProvider {
@@ -54,18 +53,15 @@ public interface TextureDataProvider {
                     builder.row.child(UIComponents.label(mergedText).margins(Insets.of(5, 0, 0, 10)));
 
                     builder.row.child(UIComponents.button(Translate.gui("open_url"), button -> Util.getPlatform().openUri(texture.getUrl())));
-                    if (!GraphicsEnvironment.isHeadless()) {
+                    if (ClipboardUtil.hasClipboardAccess()) {
                         builder.row.child(UIComponents.button(Translate.gui("copy_texture_id"), button -> {
                             screen.notify(Translate.gui("copied_texture_id_to_clipboard"));
-
-                            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(texture.getHash()), (clipboard, contents) -> {});
+                            ClipboardUtil.setClipboard(texture.getHash());
                         }));
 
                         builder.row.child(UIComponents.button(Translate.gui("copy_json"), button -> {
                             screen.notify(Translate.gui("copied_json_to_clipboard"));
-
-                            String json = PlayerTextureUtils.GSON.toJson(payload);
-                            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(json), (clipboard, contents) -> {});
+                            ClipboardUtil.setClipboard(PlayerTextureUtils.GSON.toJson(payload));
                         }));
 
                         if (!(this instanceof ItemRenderable) && type == MinecraftProfileTexture.Type.SKIN) {

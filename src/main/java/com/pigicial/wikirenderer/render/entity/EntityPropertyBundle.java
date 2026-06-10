@@ -10,6 +10,7 @@ import com.pigicial.wikirenderer.render.Renderable;
 import com.pigicial.wikirenderer.render.export.ImageRescaleMode;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.screen.WikiRendererUI;
+import com.pigicial.wikirenderer.util.ClipboardUtil;
 import com.pigicial.wikirenderer.util.Translate;
 import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.component.TextBoxComponent;
@@ -262,14 +263,14 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
         }
 
         WikiRendererUI.text(container, "entity_data", 10);
-        if (renderable.liveNonTickableEntity != null) {
+        if (renderable.liveNonTickableEntity != null && ClipboardUtil.hasClipboardAccess()) {
             container.child(WikiRendererUI.button(Translate.gui("copy_entity_coordinates"), _ -> {
                 Vec3 coords = renderable.getUsedEntity().position();
 
                 DecimalFormat df = new DecimalFormat("0.#######");
                 String text = df.format(coords.x) + " " + df.format(coords.y) + " " + df.format(coords.z);
 
-                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), (_, _) -> {});
+                ClipboardUtil.setClipboard(text);
                 screen.notify(Translate.gui("copied_entity_coordinates_to_clipboard"));
             }));
         }
