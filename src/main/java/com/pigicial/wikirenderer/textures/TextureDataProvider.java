@@ -53,7 +53,7 @@ public interface TextureDataProvider {
                     builder.row.child(UIComponents.label(mergedText).margins(Insets.of(5, 0, 0, 10)));
 
                     builder.row.child(UIComponents.button(Translate.gui("open_url"), button -> Util.getPlatform().openUri(texture.getUrl())));
-                    if (ClipboardUtil.hasClipboardAccess()) {
+                    if (ClipboardUtil.hasTextClipboardAccess()) {
                         builder.row.child(UIComponents.button(Translate.gui("copy_texture_id"), button -> {
                             screen.notify(Translate.gui("copied_texture_id_to_clipboard"));
                             ClipboardUtil.setClipboard(texture.getHash());

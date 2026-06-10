@@ -1,23 +1,26 @@
 package com.pigicial.wikirenderer.mixin;
 
 import org.objectweb.asm.tree.ClassNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
 import java.awt.*;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 public class MixinPlugin implements IMixinConfigPlugin {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger("WikiRenderer MixinPlugin");
     static {
-        if (!System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("mac") && !Boolean.getBoolean("wikirenderer.disableClipboard")) {
-            // We force-initialize AWT here so that we can copy images
-            // into the clipboard later. MC specifically enables AWT
-            // headless mode which would prevent that
-            if (!GraphicsEnvironment.isHeadless()) {
+        // We force-initialize AWT here so that we can copy stuff to clipboard
+        // on macos though, copying images to clipboard isnt supported
+        if (!GraphicsEnvironment.isHeadless()) {
+            try {
                 Toolkit.getDefaultToolkit().getSystemClipboard();
+            } catch (Exception e) {
+                LOGGER.info("Couldn't initialize AWT");
             }
         }
     }

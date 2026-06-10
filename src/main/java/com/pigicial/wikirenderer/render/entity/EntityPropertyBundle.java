@@ -29,8 +29,6 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4fStack;
 
-import java.awt.*;
-import java.awt.datatransfer.StringSelection;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -263,7 +261,7 @@ public class EntityPropertyBundle extends DefaultCroppablePropertyBundle impleme
         }
 
         WikiRendererUI.text(container, "entity_data", 10);
-        if (renderable.liveNonTickableEntity != null && ClipboardUtil.hasClipboardAccess()) {
+        if (renderable.liveNonTickableEntity != null && ClipboardUtil.hasTextClipboardAccess()) {
             container.child(WikiRendererUI.button(Translate.gui("copy_entity_coordinates"), _ -> {
                 Vec3 coords = renderable.getUsedEntity().position();
 

@@ -131,7 +131,7 @@ public class FrameBasedPropertyBundle<S, R extends Renderable<P>, P extends Prop
             WikiRendererUI.booleanControl(container, ITEM_EXPORT_PROFILE_DATA, "export_profile_data");
         }
 
-        if (ClipboardUtil.hasClipboardAccess()) {
+        if (ClipboardUtil.hasTextClipboardAccess()) {
             try (WikiRendererUI.RowBuilder builder = WikiRendererUI.autoNewLineRow(container)) {
                 ButtonComponent copyAnimationDataButton = WikiRendererUI.button(Translate.gui("copy_animation_data"), _ -> {
                     screen.notify(Translate.gui("copied_animation_data_to_clipboard"));

@@ -21,7 +21,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.Util;
 import org.joml.Matrix4fStack;
 
-import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -78,7 +77,7 @@ public interface PropertyBundle {
                 Util.getPlatform().openFile(file);
             }));
 
-            if (ClipboardUtil.hasClipboardAccess()) {
+            if (ClipboardUtil.hasImageClipboardAccess()) {
                 builder.row.child(UIComponents.button(Translate.gui("export_to_clipboard"), _ -> {
                     screen.notify(Translate.gui("copied_to_clipboard"));
 
