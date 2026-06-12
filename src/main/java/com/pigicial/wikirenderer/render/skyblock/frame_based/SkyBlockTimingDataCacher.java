@@ -4,6 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.mojang.authlib.GameProfile;
 import com.pigicial.wikirenderer.mixin.access.LevelAccessor;
+import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.textures.PlayerTextureUtils;
 import com.pigicial.wikirenderer.textures.TextureData;
 import io.wispforest.owo.ui.event.ClientRenderCallback;
@@ -58,10 +59,12 @@ public class SkyBlockTimingDataCacher {
         for (Entity entity : ((LevelAccessor) level).wikirenderer$getEntities().getAll()) {
             if (!(entity instanceof LivingEntity livingEntity)) continue;
 
+            boolean foundTextureData = false;
             for (EquipmentSlot slot : EQUIPMENT_SLOTS) {
                 ItemStack item = livingEntity.getItemBySlot(slot);
                 TextureData textureData = PlayerTextureUtils.getTextureDataFromPlayerHead(item);
                 if (textureData != null) {
+                    foundTextureData = true;
                     HeadTexturesTiming headTextures = this.textureData.getIfPresent(entity.getUUID());
                     if (headTextures == null) {
                         this.textureData.put(entity.getUUID(), new HeadTexturesTiming(textureData));
@@ -69,6 +72,11 @@ public class SkyBlockTimingDataCacher {
                         headTextures.submitTimings(textureData);
                     }
                 }
+            }
+
+            if (!foundTextureData && Minecraft.getInstance().player == entity && !(Minecraft.getInstance().screen instanceof RenderScreen)) {
+                // make it easier to swap helmets on and off yourself
+                this.textureData.invalidate(entity.getUUID());
             }
 
             DyedItemColor helmetColor = livingEntity.getItemBySlot(EquipmentSlot.HEAD).get(DataComponents.DYED_COLOR);

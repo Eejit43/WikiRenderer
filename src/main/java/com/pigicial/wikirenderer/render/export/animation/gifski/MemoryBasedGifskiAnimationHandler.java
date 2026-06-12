@@ -11,7 +11,6 @@ import com.pigicial.wikirenderer.render.export.animation.AnimationHandler;
 import com.pigicial.wikirenderer.render.skyblock.frame_based.DyedArmorFrameBasedRenderable;
 import com.pigicial.wikirenderer.screen.RenderScreen;
 import com.pigicial.wikirenderer.util.Translate;
-import com.sun.jna.platform.win32.WinDef;
 import net.minecraft.client.Minecraft;
 
 import java.io.File;

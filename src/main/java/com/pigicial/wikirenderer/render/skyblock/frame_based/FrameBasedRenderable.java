@@ -33,7 +33,8 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
     protected int currentIndex;
 
     private boolean renderActive;
-    private int currentIndexTicksLeft;
+    private int currentFrameTotalExportsSoFar;
+    private int currentFrameTotalDuration;
 
     public FrameBasedRenderable(UUID entityID, Supplier<TreeMap<Integer, S>> dataSourceSupplier, P propertyBundle) {
         this.entityID = entityID;
@@ -203,10 +204,10 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
         }
 
         if (renderScreen.currentAnimationExportData != null) {
-            currentIndexTicksLeft--;
-            if (currentIndexTicksLeft == 0) {
+            if (currentFrameTotalExportsSoFar == currentFrameTotalDuration) {
                 this.next(renderScreen);
             }
+            currentFrameTotalExportsSoFar++;
         }
     }
 
@@ -215,7 +216,8 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
         this.renderActive = true;
         this.currentIndex = 0;
         this.currentFrame = currentDataSet.getFirst();
-        this.currentIndexTicksLeft = timingData.getTickTimingMinimized(currentIndex);
+        this.currentFrameTotalExportsSoFar = 0;
+        this.currentFrameTotalDuration = timingData.getTickTimingMinimized(currentIndex);
 
         GlobalProperties.get().exportFramerate.set(timingData.getFPS());
         GlobalProperties.get().exportFrames.set(timingData.getTotalTickDuration());
@@ -227,17 +229,18 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
         if (currentIndex + 1 >= this.currentDataSet.size()) {
             renderActive = false;
             currentIndex = 0;
-
-            this.saveFileData(screen);
+            currentFrame = this.currentDataSet.getFirst();
 
             // for the start button
             screen.guiRebuildScheduled = true;
+
+            this.saveFileData(screen);
         } else {
             this.currentIndex++;
+            this.currentFrame = this.currentDataSet.get(this.currentIndex);
+            this.currentFrameTotalExportsSoFar = 0;
+            this.currentFrameTotalDuration = timingData.getTickTimingMinimized(currentIndex);
         }
-
-        this.currentFrame = this.currentDataSet.get(this.currentIndex);
-        this.currentIndexTicksLeft = timingData.getTickTimingMinimized(currentIndex);
     }
 
     protected void saveFileData(RenderScreen screen) {

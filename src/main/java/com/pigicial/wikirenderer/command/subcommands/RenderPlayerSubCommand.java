@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.pigicial.wikirenderer.WikiRenderer;
+import com.pigicial.wikirenderer.property.GlobalProperties;
 import com.pigicial.wikirenderer.render.entity.EntityRenderable;
 import com.pigicial.wikirenderer.render.entity.player.ProfileFetchMode;
 import com.pigicial.wikirenderer.render.entity.player.RenderablePlayerEntity;
@@ -79,6 +80,11 @@ public class RenderPlayerSubCommand extends WikiRendererSubCommand {
     }
 
     private void renderSelf() {
+        if (GlobalProperties.get().sbFrameRenderingKeybindOverrides.get()) {
+            RenderEntitySubCommand.tryToRenderFrameDataInstead(Minecraft.getInstance().player, null);
+            return;
+        }
+
         LocalPlayer clientPlayer = Minecraft.getInstance().player;
         ScreenSchedulerAndSaver.schedule(new RenderScreen(EntityRenderable.fromEntity(clientPlayer)));
     }

@@ -127,7 +127,7 @@ public class RenderEntitySubCommand extends WikiRendererSubCommand {
         ScreenSchedulerAndSaver.schedule(new RenderScreen(EntityRenderable.fromEntity(targetEntity)));
     }
 
-    private static void tryToRenderFrameDataInstead(Entity targetEntity, CommandContext<FabricClientCommandSource> context) {
+    public static void tryToRenderFrameDataInstead(Entity targetEntity, CommandContext<FabricClientCommandSource> context) {
         if (!(targetEntity instanceof LivingEntity livingEntity)) {
             Translate.commandError(context, "not_equippable_entity");
             return;
