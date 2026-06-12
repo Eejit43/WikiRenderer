@@ -35,8 +35,17 @@ public abstract class ItemBasedRenderable<T extends DefaultPropertyBundle> exten
             this.setupLighting(light0, light1);
         } else {
             Matrix4f matrix4f = new Matrix4f().rotationY((float) (-Math.PI / 8)).rotateX((float) (Math.PI * 3.0 / 4.0));
-            Vector3f light0 = matrix4f.transformDirection(DIFFUSE_LIGHT_0, new Vector3f()).rotateX(-slant).rotateY(-rotation).normalize();
-            Vector3f light1 = matrix4f.transformDirection(DIFFUSE_LIGHT_0, new Vector3f()).rotateX(-slant).rotateY(-rotation).normalize();
+            Vector3f light0 = matrix4f.transformDirection(DIFFUSE_LIGHT_0, new Vector3f());
+            Vector3f light1 = matrix4f.transformDirection(DIFFUSE_LIGHT_1, new Vector3f());
+
+            // didn't think 2d item lighting y scaling mattered, but custom models can make it matter
+            // https://github.com/skyblock-wiki/WikiRenderer/issues/21
+            light0.y = -light0.y;
+            light1.y = -light1.y;
+
+            light0.rotateX(-slant).rotateY(-rotation).normalize();
+            light1.rotateX(-slant).rotateY(-rotation).normalize();
+
             this.setupLighting(light0, light1);
         }
     }
