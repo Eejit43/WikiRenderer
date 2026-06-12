@@ -414,6 +414,16 @@ public class WorldBlockMesh {
             return;
         }
 
+        this.refreshWalkabilityFilter();
+
+        BlockModelLighter.enableCaching();
+        for (MeshRenderSection renderSection : subMeshes) {
+            renderSection.buildAndSubmit(this);
+        }
+        BlockModelLighter.clearCache();
+    }
+
+    protected void refreshWalkabilityFilter() {
         this.world.setWalkabilityFilter(null);
         WalkabilityFilter walkabilityFilter = null;
         AreaPropertyBundle properties = AreaPropertyBundle.INSTANCE;
@@ -424,14 +434,6 @@ public class WorldBlockMesh {
             }
         }
         this.world.setWalkabilityFilter(walkabilityFilter);
-
-        BlockModelLighter.enableCaching();
-
-        for (MeshRenderSection renderSection : subMeshes) {
-            renderSection.buildAndSubmit(this);
-        }
-
-        BlockModelLighter.clearCache();
     }
 
     private MeshRenderSection createRenderSection(int sectionX, int sectionY, int sectionZ) {
