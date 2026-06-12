@@ -27,7 +27,7 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
     protected List<FrameData<S>> currentDataSet;
     private InterpolatedTimings timingData;
 
-    protected int lastUpdatedIndex = -1;
+    protected S lastUpdatedSourceData;
     protected R renderable;
     protected FrameData<S> currentFrame;
     protected int currentIndex;
@@ -71,12 +71,10 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
             }
         }
 
-        if (this.currentFrame == null) {
-            this.currentFrame = currentDataSet.getFirst();
-        }
-        if (renderable == null) {
-            this.getOrUpdateRenderable();
-        }
+        // auto-refresh the first frame incase it changes (i.e. from not seeing a matching frame as to what you selected before when you opened it to then seeing it)
+        this.currentFrame = currentDataSet.getFirst();
+        this.currentIndex = 0;
+        this.getOrUpdateRenderable();
 
         // get animation ranges
         List<int[]> subAnimationsRanges = new ArrayList<>();
@@ -170,12 +168,12 @@ public abstract class FrameBasedRenderable<S, R extends Renderable<P>, P extends
     protected abstract void updateRenderable(R renderable, S sourceData);
 
     protected R getOrUpdateRenderable() {
-        if (this.lastUpdatedIndex != currentIndex) {
+        if (this.lastUpdatedSourceData == null || !this.sourceDataMatches(lastUpdatedSourceData, currentFrame.sourceData())) {
             if (renderable == null) {
                 renderable = this.createBlankRenderable();
             }
             this.updateRenderable(renderable, currentFrame.sourceData());
-            this.lastUpdatedIndex = currentIndex;
+            this.lastUpdatedSourceData = currentFrame.sourceData();
         }
 
         return this.renderable;

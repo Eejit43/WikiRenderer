@@ -59,12 +59,16 @@ public class SkyBlockTimingDataCacher {
         for (Entity entity : ((LevelAccessor) level).wikirenderer$getEntities().getAll()) {
             if (!(entity instanceof LivingEntity livingEntity)) continue;
 
-            boolean foundTextureData = false;
+            boolean foundTextureDataOnArmor = false;
             for (EquipmentSlot slot : EQUIPMENT_SLOTS) {
+                if (slot.getType() != EquipmentSlot.Type.HUMANOID_ARMOR &&  Minecraft.getInstance().player == entity) {
+                    continue; // ignore non-self-worn helmet skins
+                }
+
                 ItemStack item = livingEntity.getItemBySlot(slot);
                 TextureData textureData = PlayerTextureUtils.getTextureDataFromPlayerHead(item);
                 if (textureData != null) {
-                    foundTextureData = true;
+                    foundTextureDataOnArmor = slot.isArmor();
                     HeadTexturesTiming headTextures = this.textureData.getIfPresent(entity.getUUID());
                     if (headTextures == null) {
                         this.textureData.put(entity.getUUID(), new HeadTexturesTiming(textureData));
@@ -74,7 +78,7 @@ public class SkyBlockTimingDataCacher {
                 }
             }
 
-            if (!foundTextureData && Minecraft.getInstance().player == entity && !(Minecraft.getInstance().screen instanceof RenderScreen)) {
+            if (!foundTextureDataOnArmor && Minecraft.getInstance().player == entity && !(Minecraft.getInstance().screen instanceof RenderScreen)) {
                 // make it easier to swap helmets on and off yourself
                 this.textureData.invalidate(entity.getUUID());
             }
