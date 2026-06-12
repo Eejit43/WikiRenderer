@@ -116,7 +116,7 @@ public class BatchPropertyBundle extends DefaultCroppablePropertyBundle {
                 batchRenderable.currentIndex + 1,
                 batchRenderable.delegates.size(),
                 Math.max(0, batchRenderable.delegates.size() - batchRenderable.currentIndex - 1)
-                )).margins(Insets.bottom(20));
+                )).margins(Insets.of(4, 13, 0, 0));
 
         this.actualProperties.buildMainGUIControls(batchRenderable.currentDelegate, screen, container);
     }

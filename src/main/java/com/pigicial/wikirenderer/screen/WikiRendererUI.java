@@ -158,7 +158,7 @@ public class WikiRendererUI {
 
     public static DynamicLabelComponent dynamicText(FlowLayout container, Supplier<Component> content) {
         DynamicLabelComponent label = new DynamicLabelComponent(content).shadow(false);
-        label.margins(Insets.bottom(5));
+        label.margins(Insets.of(3, 5, 0, 0));
 
         container.child(label);
         return label;

@@ -2,6 +2,7 @@ package com.pigicial.wikirenderer.render.item;
 
 import com.mojang.math.Axis;
 import com.pigicial.wikirenderer.property.DefaultCroppablePropertyBundle;
+import com.pigicial.wikirenderer.property.GlobalProperties;
 import com.pigicial.wikirenderer.property.Property;
 import com.pigicial.wikirenderer.property.SerializablePropertyBundle;
 import com.pigicial.wikirenderer.property.config.WikiRendererConfigs;
@@ -113,6 +114,7 @@ public class ItemRenderablePropertyBundle extends DefaultCroppablePropertyBundle
         WikiRendererUI.intControl(screen, container, rotation, "rotation");
         WikiRendererUI.doubleControl(screen, container, slant, "slant");
         WikiRendererUI.intControl(screen, container, rotationSpeed, "rotation_speed");
+        WikiRendererUI.conditionalBooleanControl(container, GlobalProperties.get().syncRotationToAnimation, "sync_rotation_to_animation", () -> !rotationSpeed.isDefault());
         WikiRendererUI.booleanControl(container, this.allowRotatingWithMouse, "allow_rotating_with_mouse");
         container.child(this.buildResetButton());
 
