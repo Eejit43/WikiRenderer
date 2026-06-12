@@ -1,11 +1,14 @@
 package com.pigicial.wikirenderer.render.entity.options.types;
 
+import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.pigicial.wikirenderer.components.FullWidthCollapsibleContainer;
 import com.pigicial.wikirenderer.components.MiniEditBoxComponent;
 import com.pigicial.wikirenderer.components.SearchableEntityListComponent;
 import com.pigicial.wikirenderer.textures.PlayerTextureUtils;
+import com.pigicial.wikirenderer.textures.TextureData;
+import com.pigicial.wikirenderer.util.ItemComponentEncoder;
 import com.pigicial.wikirenderer.util.Translate;
 import io.wispforest.owo.ui.component.ItemComponent;
 import io.wispforest.owo.ui.component.UIComponents;
@@ -104,6 +107,32 @@ public class ItemStackOverride<S extends EntityRenderState> extends OptionalOver
         }
 
         return layout;
+    }
+
+    @Override
+    public void copyFromRenderState(S renderState) {
+        super.copyFromRenderState(renderState);
+        // todo: make player heads on the helmet slot copy over properly
+        if (this.value != null && !this.value.isEmpty()) {
+            if (this.dyeColor == null || this.dyeColor.isBlank()) {
+                DyedItemColor color = this.value.get(DataComponents.DYED_COLOR);
+                if (color != null) {
+                    dyeColor = String.valueOf(color.rgb());
+                }
+            }
+
+            if (playerHeadTextureID == null || playerHeadTextureID.isBlank()) {
+                TextureData textureData = PlayerTextureUtils.getTextureDataFromPlayerHead(this.value);
+                if (textureData != null) {
+                    MinecraftProfileTexture skin = textureData.payload().textures().get(MinecraftProfileTexture.Type.SKIN);
+                    if (skin != null) {
+                        this.playerHeadTextureID = skin.getHash();
+                    }
+                }
+            }
+
+            this.itemName = ItemComponentEncoder.toGiveString(this.value);
+        }
     }
 
     private MiniEditBoxComponent buildItemNameComponent() {
