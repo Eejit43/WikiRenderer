@@ -123,12 +123,13 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
     public boolean hasBothColumns = false;
 
     public boolean openingFile = false;
-    public ButtonComponent exportButton = null;
-    public Button exportAnimationButton;
-    @Nullable
-    public AnimationHandler currentAnimationExportData = null;
-    @Nullable
-    public Button refreshCustomFFmpegPathButton;
+    @Nullable public ButtonComponent exportButton = null;
+    @Nullable public Button exportAnimationButton = null;
+    @Nullable public AnimationHandler currentAnimationExportData = null;
+    @Nullable public Button refreshCustomFFmpegPathButton;
+
+    @Nullable private TextBoxComponent animationFramesField;
+    @Nullable private TextBoxComponent animationFramerateField;
 
     public TextBoxComponent fileNameField = null;
     private double[] scrollOffsetData = null;
@@ -471,8 +472,25 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
                 WikiRendererUI.booleanControl(rightColumn, animatedCropProperty, "crop");
             }
 
-            WikiRendererUI.labelledTextField(this, rightColumn, globalProperties.exportFrames, "animation_frames", Sizing.fixed(30));
-            WikiRendererUI.labelledTextField(this, rightColumn, globalProperties.exportFramerate, "animation_framerate", Sizing.fixed(30));
+            this.animationFramesField = WikiRendererUI.labelledTextField(rightColumn,
+                    String.valueOf(globalProperties.exportFrames.get()), "animation_frames", Sizing.fixed(30));
+            this.animationFramesField.setFilter(s -> WikiRenderer.currentAnimationHandler == null && s.matches("\\d*"));
+            this.animationFramesField.onChanged().subscribe(s -> {
+                if (!s.isBlank()) {
+                    globalProperties.exportFrames.set(Integer.parseInt(s));
+                }
+                updateAnimationExportButtonFromFields();
+            });
+
+            this.animationFramerateField = WikiRendererUI.labelledTextField(rightColumn,
+                    String.valueOf(globalProperties.exportFramerate.get()), "animation_framerate", Sizing.fixed(30));
+            this.animationFramerateField.setFilter(s -> WikiRenderer.currentAnimationHandler == null && s.matches("\\d*"));
+            this.animationFramerateField.onChanged().subscribe(s -> {
+                if (!s.isBlank()) {
+                    globalProperties.exportFramerate.set(Integer.parseInt(s));
+                }
+                updateAnimationExportButtonFromFields();
+            });
 
             WikiRendererUI.booleanControl(rightColumn, globalProperties.syncEnchantmentGlintsToExport, "sync_enchantment_glints");
             WikiRendererUI.booleanControl(rightColumn, globalProperties.speedUpEnchantmentGlints, "speed_up_enchantment_glints");
@@ -520,6 +538,31 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
         }
     }
 
+    private void updateAnimationExportButtonFromFields() {
+        if (this.exportAnimationButton != null) {
+            boolean valid = isFieldValid(animationFramesField, GlobalProperties.get().exportFrames) && isFieldValid(animationFramerateField, GlobalProperties.get().exportFramerate);
+            this.exportAnimationButton.active = valid && WikiRenderer.currentAnimationHandler == null;
+        }
+    }
+
+    private boolean isFieldValid(TextBoxComponent text, IntProperty property) {
+        if (text == null) {
+            return false;
+        }
+
+        String value = text.getValue();
+        if (value.isBlank()) {
+            return false;
+        }
+
+        try {
+            int number = Integer.parseInt(value);
+            return number != 0 && number >= property.min() && number <= property.max();
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
     public void queueAnimationExport() {
         renderable.onAnimationStart();
 
@@ -537,8 +580,10 @@ public class RenderScreen extends BaseOwoScreen<FlowLayout> {
             }
             WikiRenderer.skipWorldRender = true;
 
-            this.exportAnimationButton.active = false;
-            this.exportAnimationButton.setMessage(Translate.gui("exporting"));
+            if (this.exportAnimationButton != null) {
+                this.exportAnimationButton.active = false;
+                this.exportAnimationButton.setMessage(Translate.gui("exporting"));
+            }
             if (this.refreshCustomFFmpegPathButton != null) {
                 this.refreshCustomFFmpegPathButton.active = false;
                 this.refreshCustomFFmpegPathButton.setMessage(Translate.gui("exporting"));

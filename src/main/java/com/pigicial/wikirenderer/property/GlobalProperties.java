@@ -33,7 +33,7 @@ public class GlobalProperties implements SerializablePropertyBundle {
     public final Property<Boolean> setAnimationFpsCap = Property.of(true);
     public final Property<Boolean> loopParticles = Property.of(false);
 
-    public final IntProperty exportFramerate = IntProperty.of(20, 1, 300);
+    public final IntProperty exportFramerate = IntProperty.of(20, 1, 100);
     public final IntProperty exportFrames = IntProperty.of(60, 1, 5000);
 
     public FFmpegAnimationHandlingMode animationHandlingMode = FFmpegAnimationHandlingMode.LIVE_FFMPEG;

@@ -34,7 +34,7 @@
   "gui.wikirenderer.surrounding_particles_radius": "Radius",
   "gui.wikirenderer.show_surrounding_particles_non_live_entities_warning": "Warning: Showing surrounding particles without using the Live Entities option may cause particle positions to become offset.",
   "gui.wikirenderer.loop_particles": "Loop Particles in Animation",
-  "gui.wikirenderer.loop_particles.tooltip": "Controls whether or not particles in animation exports are looped, which is done by showing old particles towards the end and not rendering particles that would break the loop.",
+  "gui.wikirenderer.loop_particles.tooltip": "Controls whether or not particles in animation exports are looped, which is done by showing old particles towards the end and not rendering particles that would break the loop. Requires an export FPS of 20 and Render with Game Timings turned on.",
   "gui.wikirenderer.loop_particles_not_ready": "Not Ready: %s of particles saved...",
   "gui.wikirenderer.loop_particles_ready": "Ready: All particles saved!",
 
@@ -365,9 +365,9 @@
   "gui.wikirenderer.save_individual_frames.tooltip": "When enabled, the individual frames folder will not be deleted when the export finishes.",
 
   "gui.wikirenderer.animation_frames": "Animation Frames",
-  "gui.wikirenderer.animation_frames.tooltip": "Sets the total amount of frames in the animation. The duration is then derived by the framerate.",
+  "gui.wikirenderer.animation_frames.tooltip": "Sets the total amount of frames in the animation. The duration is then derived by the framerate. Max 5,000.",
   "gui.wikirenderer.animation_framerate": "Animation Framerate",
-  "gui.wikirenderer.animation_framerate.tooltip": "Sets the amount of frames rendered per second in the animation.",
+  "gui.wikirenderer.animation_framerate.tooltip": "Sets the amount of frames rendered per second in the animation. Max 100.",
   "gui.wikirenderer.sync_enchantment_glints": "Sync Glints to Animation",
   "gui.wikirenderer.sync_enchantment_glints.tooltip": "Controls if enchant glints are synced to the animation's current frame number.",
   "gui.wikirenderer.speed_up_enchantment_glints": "Speed up Enchant Glints (15s loop)",
