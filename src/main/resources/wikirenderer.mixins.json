@@ -38,6 +38,7 @@
     "entity.EquipmentLayerRendererMixin",
     "entity.HumanoidArmorLayerMixin",
     "entity.LivingEntityRendererMixin",
+    "entity.RenderBuffersMixin",
     "entity.RenderSetupMixin",
     "entity.SubmitNodeCollectionMixin",
     "entity.sprite.DrownedOuterLayerMixin",

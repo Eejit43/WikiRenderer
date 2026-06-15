@@ -59,6 +59,7 @@ public class WikiRenderer implements ClientModInitializer {
     public static boolean skipWorldRender = false;
     public static boolean skipTooltipBackgroundRender = false;
     public static boolean overrideGlint = false;
+    public static boolean inBoundsCalculation = false;
 
     public static RenderTarget mainTargetOverride = null;
 

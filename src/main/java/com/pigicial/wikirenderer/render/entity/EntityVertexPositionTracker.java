@@ -117,5 +117,9 @@ public class EntityVertexPositionTracker implements VertexConsumer {
             return renderTypeMap.computeIfAbsent(renderType, o -> new EntityVertexPositionTracker());
         }
 
+        @Override
+        public void endOutlineBatch() {
+
+        }
     }
 }

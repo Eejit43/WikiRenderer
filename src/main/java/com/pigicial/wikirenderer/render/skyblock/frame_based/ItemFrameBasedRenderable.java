@@ -39,7 +39,7 @@ public class ItemFrameBasedRenderable extends FrameBasedRenderable<TextureData, 
 
     @Override
     protected boolean sourceDataMatches(TextureData data1, TextureData data2) {
-        return Objects.equals(data1.profile(), data2.profile());
+        return Objects.equals(data1.payload().textures().get(MinecraftProfileTexture.Type.SKIN).getUrl(), data2.payload().textures().get(MinecraftProfileTexture.Type.SKIN).getUrl());
     }
 
     @Override
