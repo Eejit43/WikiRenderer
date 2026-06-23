@@ -690,7 +690,14 @@ public class EntityTypeSpecificOverrides<S extends EntityRenderState> {
                 overrides.registerFloatOverride("fuseRemainingInTicks", s -> s.fuseRemainingInTicks, (s, value) -> s.fuseRemainingInTicks = value));
 
         registerOverrides(MushroomCowRenderState.class, overrides -> {
-            overrides.registerEnumOverride("variant", MushroomCow.Variant.class, s -> s.variant, (s, value) -> s.variant = value);
+            overrides.registerEnumOverride("variant", MushroomCow.Variant.class, s -> s.variant, (s, value) -> {
+                s.variant = value;
+                if (value != null) {
+                    s.mushroomModel.clear();
+                    BlockModelResolver blockModelResolver = ((MinecraftAccessor) Minecraft.getInstance()).wikirenderer$getBlockModelResolver();
+                    blockModelResolver.update(s.mushroomModel, value.getBlockState(), MushroomCowRenderer.BLOCK_DISPLAY_CONTEXT);
+                }
+            });
             overrides.registerBooleanOverride("isBaby", s -> s.isBaby, (s, value) -> s.isBaby = value);
         });
 
