@@ -62,6 +62,9 @@ public class WorldBlockMesh {
     private volatile CompletableFuture<Void> sortFuture = null;
 
     private boolean currentlyFullyBuilding = false; // initial build or rebuilds, not automatic ones from chunk updates
+    private boolean currentlyUpdatingWalkabilityFilter = false;
+    public boolean lastUpdateUsesWalkabilityFilter = false;
+
     private float fullBuildProgress = 0;
     protected volatile boolean buildingCancelled = false;
     private boolean isAutomaticUpdateScheduled = false;
@@ -273,8 +276,9 @@ public class WorldBlockMesh {
     }
 
     public synchronized void scheduleRebuild(boolean async) {
-        if (currentlyFullyBuilding) return;
+        if (currentlyFullyBuilding || currentlyUpdatingWalkabilityFilter) return;
 
+        this.lastUpdateUsesWalkabilityFilter = AreaPropertyBundle.INSTANCE.useWalkabilityFilter.get();
         this.fullBuildProgress = 0;
         this.state = this.state != MeshState.NEW
                 ? MeshState.REBUILDING
@@ -341,7 +345,7 @@ public class WorldBlockMesh {
     }
 
     private void updateOutdatedMeshSections() {
-        if (isAutomaticUpdateScheduled || currentlyFullyBuilding) return;
+        if (isAutomaticUpdateScheduled || currentlyFullyBuilding || currentlyUpdatingWalkabilityFilter) return;
 
         boolean allowAutoUpdate = !renderable.getProperties().freezeBlocks.get();
         boolean hasDirty = subMeshes.values().stream().anyMatch(section -> section.isDirty() && (allowAutoUpdate || section.isForceUpdate()));
@@ -424,6 +428,7 @@ public class WorldBlockMesh {
     }
 
     protected void refreshWalkabilityFilter() {
+        this.currentlyUpdatingWalkabilityFilter = true;
         this.world.setWalkabilityFilter(null);
         WalkabilityFilter walkabilityFilter = null;
         AreaPropertyBundle properties = AreaPropertyBundle.INSTANCE;
@@ -434,6 +439,7 @@ public class WorldBlockMesh {
             }
         }
         this.world.setWalkabilityFilter(walkabilityFilter);
+        this.currentlyUpdatingWalkabilityFilter = false;
     }
 
     private MeshRenderSection createRenderSection(int sectionX, int sectionY, int sectionZ) {
