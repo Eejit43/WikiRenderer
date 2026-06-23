@@ -26,6 +26,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.Rotations;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
@@ -34,6 +35,7 @@ import net.minecraft.world.entity.animal.cow.MushroomCow;
 import net.minecraft.world.entity.animal.equine.Llama;
 import net.minecraft.world.entity.animal.equine.Markings;
 import net.minecraft.world.entity.animal.equine.Variant;
+import net.minecraft.world.entity.animal.feline.CatVariant;
 import net.minecraft.world.entity.animal.feline.CatVariants;
 import net.minecraft.world.entity.animal.fish.Salmon;
 import net.minecraft.world.entity.animal.fish.TropicalFish;
@@ -208,7 +210,10 @@ public class EntityTypeSpecificOverrides<S extends EntityRenderState> {
             overrides.registerAnimationStateOverride("sitUpAnimationState", s -> s.sitUpAnimationState);
             overrides.registerAnimationStateOverride("idleAnimationState", s -> s.idleAnimationState);
             overrides.registerAnimationStateOverride("dashAnimationState", s -> s.dashAnimationState);
-            overrides.registerBooleanOverride("isBaby", s -> s.isBaby, (s, value) -> s.isBaby = value);
+
+            if (!(overrides.renderer instanceof CamelHuskRenderer)) {
+                overrides.registerBooleanOverride("isBaby", s -> s.isBaby, (s, value) -> s.isBaby = value);
+            }
         });
 
         registerOverrides(CatRenderState.class, overrides -> {
@@ -216,13 +221,30 @@ public class EntityTypeSpecificOverrides<S extends EntityRenderState> {
             overrides.registerEnumOverride("collarColor", DyeColor.class, s -> s.collarColor, (s, value) -> s.collarColor = value);
             overrides.registerBooleanOverride("isBaby", s -> s.isBaby, (s, value) -> s.isBaby = value);
 
-            overrides.registerRegistryOverrideWithFallback("variant", Registries.CAT_VARIANT, _ -> null,
-                    (s, value) -> s.texture = value.assetInfo(s.isBaby).texturePath(),
-                    (_, s) -> {
-                        String fullString = s.assetInfo(false).id().toString();
-                        String type = fullString.substring(fullString.lastIndexOf("/") + 1);
-                        return OptionalOverride.toDisplayName(type);
-                    }, CatVariants.TABBY, false);
+            overrides.registerRegistryOverrideWithFallback("variant", Registries.CAT_VARIANT, _ -> null, (s, value) -> {
+                    // jank way of figuring out the non-applied variant
+                    if (value == null) {
+                        for (Holder.Reference<CatVariant> variant : RegistryOverride.getHolderValues(Registries.CAT_VARIANT)) {
+                            CatVariant possibleVariant = variant.value();
+
+                            Identifier babyTexture = possibleVariant.babyAssetInfo().texturePath();
+                            Identifier adultTexture = possibleVariant.adultAssetInfo().texturePath();
+                            if (Objects.equals(s.texture, babyTexture) || Objects.equals(s.texture, adultTexture)) {
+                                value = possibleVariant;
+                                break;
+                            }
+                        }
+                    }
+                    if (value == null) {
+                        value = RegistryOverride.getHolderValue(Registries.CAT_VARIANT, CatVariants.TABBY).value();
+                    }
+                    s.texture = value.assetInfo(s.isBaby).texturePath();
+                },
+                (_, s) -> {
+                    String fullString = s.assetInfo(false).id().toString();
+                    String type = fullString.substring(fullString.lastIndexOf("/") + 1);
+                    return OptionalOverride.toDisplayName(type);
+                }, null, true);
         });
 
         registerOverrides(ChickenRenderState.class, overrides -> {
@@ -677,11 +699,13 @@ public class EntityTypeSpecificOverrides<S extends EntityRenderState> {
             overrides.registerItemStackOverride("bodyArmorItem", s -> s.bodyArmorItem, (s, value) -> s.bodyArmorItem = value);
             overrides.registerBooleanOverride("isBaby", s -> s.isBaby, (s, value) -> s.isBaby = value);
 
-            overrides.registerRegistryOverride("variant", Registries.ZOMBIE_NAUTILUS_VARIANT, s -> s.variant, (s, value) -> s.variant = value, (_, s) -> {
-                String fullString = s.modelAndTexture().asset().id().toString();
-                String type = fullString.substring(fullString.lastIndexOf("/") + 1);
-                return OptionalOverride.toDisplayName(type);
-            });
+            if (overrides.renderer instanceof ZombieNautilusRenderer) {
+                overrides.registerRegistryOverride("variant", Registries.ZOMBIE_NAUTILUS_VARIANT, s -> s.variant, (s, value) -> s.variant = value, (_, s) -> {
+                    String fullString = s.modelAndTexture().asset().id().toString();
+                    String type = fullString.substring(fullString.lastIndexOf("/") + 1);
+                    return OptionalOverride.toDisplayName(type);
+                });
+            }
 
             overrides.registerFloatOverride("xHeadRotation", s -> s.xRot, (s, value) -> s.xRot = value);
             overrides.registerFloatOverride("yHeadRotation", s -> s.yRot, (s, value) -> s.yRot = value);
@@ -742,6 +766,7 @@ public class EntityTypeSpecificOverrides<S extends EntityRenderState> {
             overrides.registerBooleanOverride("isConverting", s -> s.isConverting, (s, value) -> s.isConverting = value);
             overrides.registerFloatOverride("maxCrossbowChageDuration", s -> s.maxCrossbowChageDuration, (s, value) -> s.maxCrossbowChageDuration = value);
             overrides.registerEnumOverride("armPose", PiglinArmPose.class, s -> s.armPose, (s, value) -> s.armPose = value);
+            overrides.registerBooleanOverride("isBaby", s -> s.isBaby, (s, value) -> s.isBaby = value);
         });
 
         registerOverrides(PigRenderState.class, overrides -> {
@@ -989,12 +1014,12 @@ public class EntityTypeSpecificOverrides<S extends EntityRenderState> {
                     for (Holder.Reference<WolfVariant> variant : RegistryOverride.getHolderValues(Registries.WOLF_VARIANT)) {
                         WolfVariant possibleVariant = variant.value();
 
-                        if (s.texture == possibleVariant.babyInfo().tame().texturePath()
-                            || s.texture == possibleVariant.babyInfo().angry().texturePath()
-                            || s.texture == possibleVariant.babyInfo().wild().texturePath()
-                            || s.texture == possibleVariant.adultInfo().tame().texturePath()
-                            || s.texture == possibleVariant.adultInfo().angry().texturePath()
-                            || s.texture == possibleVariant.adultInfo().wild().texturePath()) {
+                        if (Objects.equals(s.texture, possibleVariant.babyInfo().tame().texturePath())
+                            || Objects.equals(s.texture, possibleVariant.babyInfo().angry().texturePath())
+                            || Objects.equals(s.texture, possibleVariant.babyInfo().wild().texturePath())
+                            || Objects.equals(s.texture, possibleVariant.adultInfo().tame().texturePath())
+                            || Objects.equals(s.texture, possibleVariant.adultInfo().angry().texturePath())
+                            || Objects.equals(s.texture, possibleVariant.adultInfo().wild().texturePath())) {
                             value = possibleVariant;
                             break;
                         }
@@ -1019,8 +1044,10 @@ public class EntityTypeSpecificOverrides<S extends EntityRenderState> {
 
         registerOverrides(ZombieRenderState.class, overrides -> {
             overrides.registerBooleanOverride("isAggressive", s -> s.isAggressive, (s, value) -> s.isAggressive = value);
-            overrides.registerBooleanOverride("isConverting", s -> s.isConverting, (s, value) -> s.isConverting = value);
-            overrides.registerBooleanOverride("isBaby", s -> s.isBaby, (s, value) -> s.isBaby = value);
+            if (!(overrides.renderer instanceof GiantMobRenderer)) {
+                overrides.registerBooleanOverride("isConverting", s -> s.isConverting, (s, value) -> s.isConverting = value);
+                overrides.registerBooleanOverride("isBaby", s -> s.isBaby, (s, value) -> s.isBaby = value);
+            }
         });
 
         // zombie villager
